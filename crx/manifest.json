@@ -1,0 +1,14 @@
+{
+  "name": "Simple Tank",
+  "description": "Simeple tank game by Azki(azki@azki.org). origin URL: http://tank.azki.org/",
+  "version": "1",
+  "app": {
+    "launch": {
+      "local_path": "main.html"
+    }
+  },
+  "icons": {
+    "16": "icon16.png",
+    "128": "icon128.png"
+  }
+}

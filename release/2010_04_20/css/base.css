@@ -1,0 +1,27 @@
+@charset "utf-8";
+
+#canvasPanel,#cvmap,#cvtank,#cvshot { position: absolute; top: 0; left: 0; width: 640px; height: 480px; }
+
+.stNav { font-size: 30px; font-weight: bold; }
+.keydesc { color: #080; text-decoration: underline; }
+.centerTd { text-align: center; }
+.inputText { width: 300px; font-size: 24px; text-align: center; }
+.inputDesc { font-size: 24px; color: #888; }
+.smallDesc { font-size: 16px; color: #888; }
+
+#ctlTable { position: absolute; top: 0; left: 650px; width: 300px; }
+
+.tankHpBar { border: 1px solid #000; width: 300px; height: 15px; overflow: hidden; font-size: 14px; }
+#player0hpBar { width: 300px; height: 15px; background: #f00; }
+#player1hpBar { width: 300px; height: 15px; background: #00f; }
+#player2hpBar { width: 300px; height: 15px; background: #ff0; }
+#player3hpBar { width: 300px; height: 15px; background: #f0f; }
+#player4hpBar { width: 300px; height: 15px; background: #0ff; }
+
+#angleValue { border: 1px dashed green; -webkit-border-radius:10px; }
+#powerValue { border: 1px dashed green; -webkit-border-radius:10px; }
+
+#shoot { width: 300px; }
+
+#copyright { font-size: 20px; }
+

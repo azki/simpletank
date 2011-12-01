@@ -1,0 +1,115 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"> 
+<html xmlns="http://www.w3.org/1999/xhtml" lang="ko">
+	<head>
+		<meta http-equiv="content-type" content="application/xhtml+xml; charset=UTF-8" />
+		<title>simple tank</title>
+		<script type="text/javascript" src="./js/jquery-1.4.1.min.js"></script>
+		<script type="text/javascript" src="./js/excanvas.compiled.js"></script>
+		<script type="text/javascript">
+var simpleTank = {};
+		</script>
+		<script type="text/javascript" src="./js/map.js"></script>
+		<script type="text/javascript" src="./js/tank.js"></script>
+		<script type="text/javascript">
+/*global $, simpleTank, alert*/
+"use strict";
+$(function () {
+	var cvmap, cvtank, mapCtx, tankCtx, map;
+	cvmap = $("#cvmap").get(0);
+	cvtank = $("#cvtank").get(0);
+	if (cvmap.getContext) {
+		mapCtx = cvmap.getContext("2d");
+		tankCtx = cvtank.getContext("2d");
+		map = new simpleTank.Map(mapCtx, {
+			width: 640,
+			height: 480
+		});
+		$("#AAA").click(function () {
+			map.newMapData();
+			map.redraw();
+		});
+		$("#BBB").click(function () {
+			var tank;
+			tank = new simpleTank.Tank(tankCtx, {
+				type: 1
+			});
+			tank.initTank();
+			tank.x = 320;
+			tank.y = map.getDataValue(320);
+			tank.angle = 45;
+			tank.color = "#f00";
+			tank.redraw();
+		});
+		$("#CCC").click(function () {
+			var tank;
+			tank = new simpleTank.Tank(tankCtx, {
+				type: 1
+			});
+			tank.initTank();
+			tank.x = 120;
+			tank.y = map.getDataValue(120);
+			tank.angle = -45;
+			tank.color = "#00f";
+			tank.redraw();
+		});
+		$("#DDD").click(function () {
+			var tank;
+			tank = new simpleTank.Tank(tankCtx, {
+				type: 1
+			});
+			tank.initTank();
+			tank.x = 460;
+			tank.y = map.getDataValue(460);
+			tank.angle = 0;
+			tank.color = "#f0f";
+			tank.redraw();
+		});
+		$("#EEE").click(function () {
+			var tank;
+			tank = new simpleTank.Tank(tankCtx, {
+				type: 1
+			});
+			tank.initTank();
+			tank.x = 500;
+			tank.y = map.getDataValue(500);
+			tank.angle = -90;
+			tank.color = "#0ff";
+			tank.redraw();
+			
+			//alert(tank.getFar(500 + 4, tank.y + 4));
+		});
+		$("#FFF").click(function () {
+			var tank;
+			tank = new simpleTank.Tank(tankCtx, {
+				type: 1
+			});
+			tank.initTank();
+			tank.x = 50;
+			tank.y = map.getDataValue(50);
+			tank.angle = 90;
+			tank.color = "#ff0";
+			tank.redraw();
+			
+			//alert(tank.getFar(500 + 4, tank.y + 4));
+		});
+	}
+	else {
+		alert("캔바스를 지원하지 않는 브라우저입니다.");
+	}
+});
+		</script>
+	</head>
+	<body>
+		<noscript>
+			스크립트를 사용할 수 없습니다. 이 웹사이트는 스크립트를 지원하는 웹브라우저가 필요합니다.
+		</noscript>
+		<canvas id="cvmap" style="position: absolute;" width="640" height="480"></canvas>
+		<canvas id="cvtank" style="position: absolute;" width="640" height="480"></canvas>
+		<button id="AAA" style="position: absolute; top: 500px;">MAP</button>
+		<button id="BBB" style="position: absolute; top: 520px;">Tank 320, 45</button>
+		<button id="CCC" style="position: absolute; top: 540px;">Tank 120, -45</button>
+		<button id="DDD" style="position: absolute; top: 560px;">Tank 460, 0</button>
+		<button id="EEE" style="position: absolute; top: 580px;">Tank 500, -90</button>
+		<button id="FFF" style="position: absolute; top: 600px;">Tank 50, 90</button>
+	</body>
+</html>

@@ -1,0 +1,158 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"> 
+<html xmlns="http://www.w3.org/1999/xhtml" lang="ko">
+	<head>
+		<meta http-equiv="content-type" content="application/xhtml+xml; charset=UTF-8" />
+		<meta name="viewport" content="user-scalable=no, width=960" />
+		<meta name="apple-mobile-web-app-capable" content="yes">
+		<meta name="apple-mobile-web-app-status-bar-style" content="black">
+		<title>simple tank</title>
+		<link type="text/css" rel="stylesheet" href="./css/base.css" media="screen" />
+		<script type="text/javascript" src="./js/jquery-1.4.1.min.js"></script>
+		<script type="text/javascript" src="./js/excanvas.compiled.js"></script>
+		<script type="text/javascript">
+var simpleTank = {};
+		</script>
+		<script type="text/javascript" src="./js/map.js"></script>
+		<script type="text/javascript" src="./js/tanks.js"></script>
+		<script type="text/javascript" src="./js/tank.js"></script>
+		<script type="text/javascript" src="./js/shot.js"></script>
+		
+		<script type="text/javascript" src="./js/ui.js"></script>
+		<script type="text/javascript">
+/*global $, alert, simpleTank*/
+"use strict";
+$(function () {
+	var i, cvmap, cvtank, cvshot, mapCtx, tankCtx, shotCtx, map, tanks, shot, ui;
+	for (i = -1; -90 < i; i -= 1) {
+		$("#angleValue").append("<option value=\"" + i + "\">" + i + "</option>");
+	}
+	for (i = 90; 0 < i; i -= 1) {
+		$("#angleValue").append("<option value=\"" + i + "\">" + i + "</option>");
+	}
+	for (i = 0; i < 100; i += 1) {
+		$("#powerValue").append("<option value=\"" + i + "\">" + i + "</option>");
+	}
+	cvmap = $("#cvmap").get(0);
+	cvtank = $("#cvtank").get(0);
+	cvshot = $("#cvshot").get(0);
+	if (cvmap.getContext) {
+		mapCtx = cvmap.getContext("2d");
+		tankCtx = cvtank.getContext("2d");
+		shotCtx = cvshot.getContext("2d");
+		map = new simpleTank.Map(mapCtx, {
+			width: 640,
+			height: 480
+		});
+		tanks = new simpleTank.Tanks(tankCtx, {
+			map: map,
+			count: 5
+		});
+		shot = new simpleTank.Shot(shotCtx, {
+			map: map,
+			tanks: tanks
+		});
+		ui = new simpleTank.Ui(map, tanks, shot);
+		
+		
+	}
+	else {
+		alert("캔바스를 지원하지 않는 브라우저입니다.");
+	}
+});
+		</script>
+	</head>
+	<body>
+		<div id="canvasPanel">
+			<canvas id="cvmap" width="640" height="480"></canvas>
+			<canvas id="cvtank" width="640" height="480"></canvas>
+			<canvas id="cvshot" width="640" height="480"></canvas>
+		</div>
+		
+		<table id="ctlTable" class="stNav" summary="조작 버튼 테이블">
+			<colgroup>
+				<col width="100" />
+				<col width="200" />
+			</colgroup>
+			<tbody>
+				
+				<tr>
+					<td colspan="2">
+						Tank's HP:
+					</td>
+				</tr>
+				
+				<tr>
+					<td colspan="2">
+						<div class="tankHpBar">
+							<div id="player0hpBar"><pre></pre></div>
+						</div>
+					</td>
+				</tr>
+				<tr>
+					<td colspan="2">
+						<div class="tankHpBar">
+							<div id="player1hpBar"><pre></pre></div>
+						</div>
+					</td>
+				</tr>
+				<tr>
+					<td colspan="2">
+						<div class="tankHpBar">
+							<div id="player2hpBar"><pre></pre></div>
+						</div>
+					</td>
+				</tr>
+				<tr>
+					<td colspan="2">
+						<div class="tankHpBar">
+							<div id="player3hpBar"><pre></pre></div>
+						</div>
+					</td>
+				</tr>
+				<tr>
+					<td colspan="2">
+						<div class="tankHpBar">
+							<div id="player4hpBar"><pre></pre></div>
+						</div>
+					</td>
+				</tr>
+				
+				<tr>
+					<td colspan="2">
+						Angle: <span class="inputDesc">(keys: <span class="keydesc">a</span>, <span class="keydesc">d</span>)</span><br />
+						<select id="angleValue" class="inputText"></select>
+					</td>
+				</tr>
+				
+				<tr>
+					<td colspan="2">
+						Power: <span class="inputDesc">(keys: <span class="keydesc">s</span>, <span class="keydesc">w</span>)</span><br />
+						<select id="powerValue" class="inputText"></select>
+					</td>
+				</tr>
+				
+				<tr>
+					<td colspan="2">
+						<span class="smallDesc">←화면을 클릭해도 조절됩니다.</span>
+					</td>
+				</tr>
+				
+				<tr>
+					<td colspan="2">
+						Shot: <span class="inputDesc">(keys: <span class="keydesc">f</span>)</span><br />
+						<button id="shoot" title="shoot" class="stNav">Shoot!!</button>
+					</td>
+				</tr>
+				
+				<tr>
+					<td colspan="2">
+						<span class="smallDesc">아이폰 사파리에서 정상 동작합니다.</span>
+						<address id="copyright" class="stNav">dev by azki(@azki.org).</address>
+					</td>
+				</tr>
+				
+			</tbody>
+		</table>
+		
+	</body>
+</html>

@@ -1,0 +1,19 @@
+@charset "utf-8";
+
+#gameSetTable { margin: auto; width: 1024px; }
+#gameSetTable select { font-weight: bold; background:#000; }
+#canvasPanel { position: relative; margin:auto; width: 1024px; height: 600px; }
+#cvmap,#cvtank,#cvshot { position: absolute; top: 0; left: 0; width: 1024px; height: 600px; }
+
+.stNav { font-size: 32px; font-weight: bold; }
+.keydesc { color: #080; text-decoration: underline; }
+.alignCenter { text-align: center; }
+.inputText { width: 300px; font-size: 24px; text-align: center; }
+.inputDesc { font-size: 24px; color: #888; }
+.smallDesc { font-size: 16px; color: #888; }
+
+#ctlTable { margin: auto; width: 1024px; }
+
+#shoot,#move { width: 150px; height: 100px; }
+
+#copyright { margin-top: 5px; font-size: 20px; text-align: right; }

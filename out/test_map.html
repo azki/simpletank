@@ -1,0 +1,43 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"> 
+<html xmlns="http://www.w3.org/1999/xhtml" lang="ko">
+	<head>
+		<meta http-equiv="content-type" content="application/xhtml+xml; charset=UTF-8" />
+		<title>simple tank</title>
+		<script type="text/javascript" src="./js/jquery-1.4.1.min.js"></script>
+		<script type="text/javascript" src="./js/excanvas.compiled.js"></script>
+		<script type="text/javascript">
+			var simpleTank = {};
+		</script>
+		<script type="text/javascript" src="./js/map.js"></script>
+		<script type="text/javascript">
+			$(function(){
+				var canvas;
+				canvas = $("#cvmap").get(0);
+				if (canvas.getContext) {
+					ctx = canvas.getContext("2d");
+					var map = new simpleTank.Map(ctx, {
+						width: 640,
+						height: 480
+					});
+					$("#AAA").click(function(){
+						map.newMapData();
+					});
+					$("#BBB").click(function(){
+						map.redraw();
+					});
+				}
+				else {
+					alert("캔바스를 지원하지 않는 브라우저입니다.");
+				}
+			});
+		</script>
+	</head>
+	<body>
+		<noscript>
+			스크립트를 사용할 수 없습니다. 이 웹사이트는 스크립트를 지원하는 웹브라우저가 필요합니다.
+		</noscript>
+		<canvas id="cvmap" style="position: absolute;" width="640" height="480"></canvas>
+		<button id="AAA" style="position: absolute; top: 500px;">newMapData</button>
+		<button id="BBB" style="position: absolute; top: 520px;">redraw</button>
+	</body>
+</html>

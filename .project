@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<projectDescription>
+	<name>st</name>
+	<comment></comment>
+	<projects>
+	</projects>
+	<buildSpec>
+		<buildCommand>
+			<name>org.eclipse.wst.common.project.facet.core.builder</name>
+			<arguments>
+			</arguments>
+		</buildCommand>
+		<buildCommand>
+			<name>com.rockstarapps.jslint.JsLintBuilder</name>
+			<arguments>
+				<dictionary>
+					<key>buildAll</key>
+					<value>false</value>
+				</dictionary>
+				<dictionary>
+					<key>external_defines</key>
+					<value></value>
+				</dictionary>
+				<dictionary>
+					<key>properties</key>
+					<value>params = {passfail: false,debug: false,undef: true,white: true,evil: false,nomen: true,browser: false,cap: false,eqeqeq: true,widget: false,on: false,plusplus: true,sidebar: false,fragment: false,bitwise: true,rhino: false,laxbreak: false,regexp: true,safe: false,forin: false,onevar: true,adsafe: false,sub: false,strict: false,css: false,newcap: true,maxerrors:100,indent:4};</value>
+				</dictionary>
+				<dictionary>
+					<key>selection</key>
+					<value></value>
+				</dictionary>
+			</arguments>
+		</buildCommand>
+	</buildSpec>
+	<natures>
+		<nature>org.eclipse.wst.common.project.facet.core.nature</nature>
+	</natures>
+</projectDescription>
