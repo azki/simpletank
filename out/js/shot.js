@@ -67,7 +67,7 @@ simpleTank.Shot.prototype = {
 		drawDelay = 13;
 		loop = 0;
 		loopPerFrame = 5;
-		wind = 0;
+		wind = this.map.wind * 0.05;
 		gravity = 0.001;
 		beforeDate = new Date();
 		this.shooting = true;
@@ -193,6 +193,7 @@ simpleTank.Shot.prototype = {
 				thisP.redraw();
 				thisP.damage();
 				thisP.dig();
+				thisP.map.rndWind();
 				if (thisP.callback) {
 					x = Math.round(thisP.x);
 					y = Math.round(thisP.y);

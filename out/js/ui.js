@@ -36,8 +36,10 @@ simpleTank.Ui.prototype = {
 		var tanks, shot;
 		tanks = this.tanks;
 		shot = this.shot;
+		
 		this.player.stopAi();
 		this.player = player;
+		
 		tanks.initTanks(player);
 		tanks.redraw();
 		shot.stop();

@@ -33,7 +33,7 @@ simpleTank.Player.prototype = {
 	stopAi: function () {
 		var len, i, ai;
 		len = this.count;
-		for (i = 0; i < len; i += 2) {
+		for (i = 0; i < len; i += 1) {
 			ai = this.aiArray[i];
 			if (ai) {
 				ai.stop();

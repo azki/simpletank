@@ -65,6 +65,7 @@ simpleTank.Ai03.prototype = {
 	stop: function () {
 		if (this.timer !== null) {
 			clearTimeout(this.timer);
+			this.timer = null;
 		}
 	},
 	setShootResult: function (result, lastPower) {
@@ -80,7 +81,7 @@ simpleTank.Ai03.prototype = {
 				resultFar = Math.abs(lastX - resultX);
 				goalFar = Math.abs(lastX - targetX);
 				if (resultFar < goalFar) {
-					this.supplement = lastPower * (2.0 - 1.0 * Math.random());//100%~150%
+					this.supplement = lastPower * (2.0 - 1.0 * Math.random());//100%~200%
 					if (lastPower < 0.1) {
 						this.supplement += 0.1;
 					}
