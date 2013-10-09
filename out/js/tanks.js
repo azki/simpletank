@@ -41,7 +41,7 @@ simpleTank.Tanks.prototype = {
 			}
 			tankAngle = randX * 2 < mapWidth ? 45 : -45;
 			tank = tanks[i] = new this.nameSpace.Tank(this.ctx, {
-				type: player.getTeam(i) === 1 ? 1 : 2,
+				type: player.isAi(i) ? 2 : 1,
 				x: randX,
 				y: this.map.getDataValue(randX),
 				angle: tankAngle,

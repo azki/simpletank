@@ -54,5 +54,8 @@ simpleTank.Player.prototype = {
 	},
 	getTeam: function (index) {
 		return this.data[index].team;
+	},
+	isAi: function (index) {
+		return this.data[i].type.substr(0, 2) === "Ai";
 	}
 };
