@@ -38,7 +38,7 @@ simpleTank.Map.prototype = {
 		ctx.fillStyle = lingrad;
 		ctx.fillRect(0, 0, this.width, this.height);
 		//moon
-		moonX = 500 + this.wind * 150;
+		moonX = Math.floor(this.width / 2) + this.wind * Math.floor(this.width / 5);
 		moonY = 70;
 		lingrad = ctx.createRadialGradient(moonX, moonY, 15, moonX, moonY, 30);
 		lingrad.addColorStop(0, "rgba(255, 165, 0, 1)");
