@@ -17,10 +17,6 @@ simpleTank.Map.prototype = {
 		this.mapData = null;
 		this.wind = 0;
 	},
-	setMapStat: function () {
-		//from server.
-		//TODO.
-	},
 	rndWind: function() {
 		this.wind = Math.floor(Math.random() * 5) - 2;
 		this.redraw();
@@ -37,16 +33,13 @@ simpleTank.Map.prototype = {
 		lingrad.addColorStop(1, "#fff");
 		ctx.fillStyle = lingrad;
 		ctx.fillRect(0, 0, this.width, this.height);
-		//moon
-		moonX = Math.floor(this.width / 2) + this.wind * Math.floor(this.width / 5);
-		moonY = 70;
-		lingrad = ctx.createRadialGradient(moonX, moonY, 15, moonX, moonY, 30);
-		lingrad.addColorStop(0, "rgba(255, 165, 0, 1)");
-		lingrad.addColorStop(1, "rgba(255, 165, 0, 0)");
+		//wind
+		lingrad = ctx.createLinearGradient(20, 0, 180, 0);
+		lingrad.addColorStop(0, "#fff");
+		lingrad.addColorStop((this.wind + 2) / 4, "#00f");
+		lingrad.addColorStop(1, "#fff");
 		ctx.fillStyle = lingrad;
-		ctx.beginPath();
-		ctx.arc(moonX, moonY, 30, 0, Math.PI * 2, true);
-		ctx.fill();
+		ctx.fillRect(20, 20, 160, 20);
 		//ground
 		gradientStartY = Math.round(this.height * 0.3);
 		lingrad = ctx.createLinearGradient(0, gradientStartY, 0, this.height - 1);
