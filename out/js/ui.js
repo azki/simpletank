@@ -163,15 +163,6 @@ simpleTank.Ui.prototype = {
 				}
 				$("#angleValue").val(angle);
 			}
-		}).mousewheel(function (event, delta) {
-			if (thisP.shootable) {
-				if (delta < 0) {
-					thisP.powerDown();
-				}
-				else {
-					thisP.powerUp();
-				}
-			}
 		});
 		$("#shoot").click(function () {
 			if (thisP.shootable) {

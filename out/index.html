@@ -2,13 +2,11 @@
 <html xmlns="http://www.w3.org/1999/xhtml" lang="ko">
 	<head>
 		<meta http-equiv="content-type" content="application/xhtml+xml; charset=UTF-8" />
-		<meta name="viewport" content="user-scalable=no, width=640" />
-		<meta name="apple-mobile-web-app-capable" content="yes">
-		<meta name="apple-mobile-web-app-status-bar-style" content="black">
 		<title>Simple Tank : tank.azki.org</title>
-		<link type="text/css" rel="stylesheet" href="./css/base.css" media="screen" />
+		<style type="text/css">
+			html,body {margin:0}
+		</style>
 		<script type="text/javascript" src="./js/jquery-1.4.1.min.js"></script>
-		<script type="text/javascript" src="./js/jquery.mousewheel.min.js"></script>
 <!--[if IE]>
 		<script type="text/javascript" src="./js/excanvas.compiled.js"></script>
 <![endif]-->
@@ -27,7 +25,11 @@ var simpleTank = {};
 /*global $, setTimeout, simpleTank*/
 "use strict";
 $(function () {
-	var i, cvmap, cvtank, cvshot, mapCtx, tankCtx, shotCtx, map, tanks, shot, player, ui;
+	var mapWidth, mapHeight, i, cvmap, cvtank, cvshot, mapCtx, tankCtx, shotCtx, map, tanks, shot, player, ui;
+	mapWidth = innerWidth;
+	mapHeight = innerHeight;
+	$("#canvasPanel").width(mapWidth).height(mapHeight);
+	$("#canvasPanel>canvas").attr("width", mapWidth).attr("height", mapHeight);
 	for (i = -1; -90 < i; i -= 1) {
 		$("#angleValue").append("<option value=\"" + i + "\">" + i + "</option>");
 	}
@@ -45,8 +47,8 @@ $(function () {
 		tankCtx = cvtank.getContext("2d");
 		shotCtx = cvshot.getContext("2d");
 		map = new simpleTank.Map(mapCtx, {
-			width: 640,
-			height: 480
+			width: mapWidth,
+			height: mapHeight
 		});
 		tanks = new simpleTank.Tanks(tankCtx, {
 			map: map
@@ -103,43 +105,14 @@ $(function () {
 		</script>
 	</head>
 	<body>
-		<div id="canvasPanel">
-			<canvas id="cvmap" width="640" height="480"></canvas>
-			<canvas id="cvtank" width="640" height="480"></canvas>
-			<canvas id="cvshot" width="640" height="480"></canvas>
+		<div id="canvasPanel" style="position:absolute;">
+			<canvas id="cvmap" style="position:absolute;"></canvas>
+			<canvas id="cvtank" style="position:absolute;"></canvas>
+			<canvas id="cvshot" style="position:absolute;"></canvas>
 		</div>
-		
-		<table cellpadding="0" cellspacing="0" id="ctlTable" class="stNav" summary="조작 버튼 테이블">
-			<colgroup>
-				<col width="320" />
-				<col width="320" />
-			</colgroup>
-			<tbody>
-				
-				<tr>
-					<td class="alignCenter">
-						Angle: <span class="inputDesc">(keys: <span class="keydesc">a</span>, <span class="keydesc">d</span>)</span><br />
-						<select id="angleValue" class="inputText"></select>
-					</td>
-					<td rowspan="2" class="alignCenter">
-						<div class="smallDesc">
-							Click screen to set angle and power.
-						</div>
-						<button id="move" title="move" class="stNav">Mo<span class="keydesc">v</span>e</button>
-						<button id="shoot" title="fire" class="stNav"><span class="keydesc">F</span>ire</button>
-						<address id="copyright">dev by azki(@azki.org).</address>
-					</td>
-				</tr>
-				
-				<tr>
-					<td class="alignCenter">
-						Power: <span class="inputDesc">(keys: <span class="keydesc">s</span>, <span class="keydesc">w</span>)</span><br />
-						<select id="powerValue" class="inputText"></select>
-					</td>
-				</tr>
-				
-			</tbody>
-		</table>
-		
+		<div style="display:none;">
+			<select id="angleValue" class="inputText"></select>
+			<select id="powerValue" class="inputText"></select>
+		</div>
 	</body>
 </html>
