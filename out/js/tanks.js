@@ -390,7 +390,7 @@ simpleTank.Tanks.prototype = {
 			tank = tanks[i];
 			far = tank.getFar(x, y);
 			if (far <= damageRange) {
-				tank.hp -= Math.ceil(value * (damageRange - far) / damageRange);
+				tank.hp -= Math.ceil(value * ((damageRange - far) * (damageRange - far)) / (damageRange * damageRange));
 				if (tank.hp < 0) {
 					needRedraw = true;
 				}
