@@ -21,11 +21,10 @@ simpleTank.Player.prototype = {
 		len = this.count;
 		this.aiInterface = aiInterface;
 		for (i = 0; i < len; i += 1) {
-			playerType = data[i].type;
-			if (playerType.substr(0, 2) === "Ai") {
+			if (this.isAi(i)) {
+				playerType = data[i].type;
 				this.aiArray[i] = new this.nameSpace[playerType](aiInterface, map, tanks, this, i, data[i].difficulty);
-			}
-			else {
+			} else {
 				this.aiArray[i] = null;
 			}
 		}
@@ -56,6 +55,6 @@ simpleTank.Player.prototype = {
 		return this.data[index].team;
 	},
 	isAi: function (index) {
-		return this.data[i].type.substr(0, 2) === "Ai";
+		return this.data[index].type.substr(0, 2) === "Ai";
 	}
 };
