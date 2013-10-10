@@ -199,29 +199,35 @@ simpleTank.Tanks.prototype = {
 		}
 	},
 	drawAssist: function (ctx) {
-		var tank, tankX, tankY, tankPower, tankAngle, assistX, assistY, assistArcArr, i;
+		var tank, tankGunX, tankGunY, tankAngle, assistX, assistY, assistArcArr, i, assistX2, assistY2, assistX3, assistY3;
 		if (0 <= this.turn) {
 			tank = this.tankArr[this.turn];
-			tankX = tank.x;
-			tankY = tank.y;
-			tankPower = tank.power;
+			tankGunX = tank.x + tank.getGunX();
+			tankGunY = tank.y + tank.getGunY();
 			tankAngle = tank.angle;
 			
-			ctx.save();
-			
-			ctx.lineWidth = "3";
-			ctx.strokeStyle = tank.color;
 			if (0 < tankAngle) {
 				tankAngle += 180;
 			}
-			assistX = -Math.round(tankPower * 300 * Math.cos(tankAngle * Math.PI / 180)) + tankX;
-			assistY = Math.round(tankPower * 300 * Math.sin(tankAngle * Math.PI / 180)) + tankY;
-			assistArcArr = [0.1, 0.4, 0.6, 0.9, 1.1, 1.4, 1.6, 1.9];
-			for (i = 0; i < 8; i += 2) {
-				ctx.beginPath();
-				ctx.arc(assistX, assistY, 10, Math.PI * assistArcArr[i], Math.PI * assistArcArr[i + 1], false);
-				ctx.stroke();
+			assistX = -Math.round(200 * Math.cos(tankAngle * Math.PI / 180)) + tankGunX;
+			assistY = Math.round(200 * Math.sin(tankAngle * Math.PI / 180)) + tankGunY;
+			
+			ctx.save();
+			ctx.lineWidth = "1";
+			var gradient = ctx.createLinearGradient(tankGunX, tankGunY, assistX, assistY);
+			gradient.addColorStop(0, 'rgba(0, 0, 0, 0.3)');
+            gradient.addColorStop(1, 'rgba(0, 0, 0, 0)');
+            ctx.strokeStyle = gradient;
+			ctx.beginPath();
+			for (i = 1; i < 20; i+=2) {
+				assistX2 = -Math.round(i * 10 * Math.cos(tankAngle * Math.PI / 180)) + tankGunX;
+				assistY2 = Math.round(i * 10 * Math.sin(tankAngle * Math.PI / 180)) + tankGunY;
+				assistX3 = -Math.round((i+1) * 10 * Math.cos(tankAngle * Math.PI / 180)) + tankGunX;
+				assistY3 = Math.round((i+1) * 10 * Math.sin(tankAngle * Math.PI / 180)) + tankGunY;
+				ctx.moveTo(assistX2, assistY2);
+				ctx.lineTo(assistX3, assistY3);
 			}
+			ctx.stroke();
 			
 			ctx.restore();
 		}
