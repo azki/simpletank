@@ -399,5 +399,13 @@ simpleTank.Tanks.prototype = {
 		if (needRedraw) {
 			this.redraw();
 		}
+	},
+	spentDoubleShot: function () {
+		//only client.
+		if (this.turn < 0) {
+			throw "getDamageRage";
+		}
+		var tank = this.tankArr[this.turn];
+		tank.doubleShot -= 1;
 	}
 };

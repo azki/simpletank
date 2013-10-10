@@ -17,7 +17,7 @@ simpleTank.Map.prototype = {
 		this.mapData = null;
 		this.wind = 0;
 	},
-	rndWind: function() {
+	rndWind: function () {
 		this.wind = Math.floor(Math.random() * 5) - 2;
 		this.redraw();
 	},

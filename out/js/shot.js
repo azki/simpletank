@@ -34,8 +34,7 @@ simpleTank.Shot.prototype = {
 			this.y = option.y;
 			angle = option.angle;
 			power = option.power;
-		}
-		else {
+		} else {
 			tanks = this.tanks;
 			this.x = tanks.getGunX();
 			this.y = tanks.getGunY();
@@ -99,8 +98,7 @@ simpleTank.Shot.prototype = {
 		};
 		if (isTest) {
 			timerFn();
-		}
-		else {
+		} else {
 			this.timer = setTimeout(timerFn, drawDelay);
 		}
 	},
@@ -131,16 +129,13 @@ simpleTank.Shot.prototype = {
 			if (this.shotOption.type !== "test") {
 				this.redraw();
 			}
-		}
-		else {
+		} else {
 			if (this.shotOption.type === "test") {
 				this.shootTest();
-			}
-			else {
+			} else {
 				if (this.shotOption.type === "move") {
 					this.shootMove(x);
-				}
-				else {
+				} else {
 					this.shootExplosion();
 				}
 			}
@@ -193,15 +188,22 @@ simpleTank.Shot.prototype = {
 				thisP.redraw();
 				thisP.damage();
 				thisP.dig();
-				thisP.map.rndWind();
-				if (thisP.callback) {
-					x = Math.round(thisP.x);
-					y = Math.round(thisP.y);
-					thisP.callback({
-						x: x,
-						y: y
-					});
-					thisP.callback = null;
+				if (thisP.shotOption.type === "doubleShot") {
+					thisP.tanks.spentDoubleShot();
+					thisP.shotOption.type = "shot";
+					thisP.initShot(thisP.shotOption);
+					thisP.shoot(thisP.callback);
+				} else {
+					thisP.map.rndWind();
+					if (thisP.callback) {
+						x = Math.round(thisP.x);
+						y = Math.round(thisP.y);
+						thisP.callback({
+							x: x,
+							y: y
+						});
+						thisP.callback = null;
+					}
 				}
 			}, 400);
 		}, 100);
@@ -239,8 +241,7 @@ simpleTank.Shot.prototype = {
 					ctx.arc(Math.round(this.x), Math.round(this.y), explosionRange, 0, Math.PI * 2, false);
 					ctx.fill();
 				}
-			}
-			else {
+			} else {
 				ctx.beginPath();
 				ctx.lineWidth = "2";//shot border
 				ctx.fillStyle = this.color;

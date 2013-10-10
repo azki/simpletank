@@ -25,6 +25,7 @@ simpleTank.Tank.prototype = {
 		this.tankDepth = 0;
 		this.tankSize = 0;
 		this.gunLength = 0;
+		this.doubleShot = 0;
 	},
 	initTank: function () {
 		this["initTankType" + this.type]();
@@ -37,6 +38,7 @@ simpleTank.Tank.prototype = {
 		this.gunLength = 10;
 		this.damageRage = 40;
 		this.damageValue = 50;
+		this.doubleShot = 2;
 	},
 	initTankType2: function () {
 		this.hp = 100;
@@ -46,6 +48,7 @@ simpleTank.Tank.prototype = {
 		this.gunLength = 10;
 		this.damageRage = 40;
 		this.damageValue = 50;
+		this.doubleShot = 2;
 	},
 	redraw: function () {
 		var ctx;

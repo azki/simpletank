@@ -217,6 +217,13 @@ simpleTank.Ui.prototype = {
 						type: "move"
 					});
 					break;
+				case 66://b
+					if (0 < thisP.tank.doubleShot) {
+						thisP.shootFromEvent({
+							type: "doubleShot"
+						});
+					}
+					break;
 				}
 			}
 		});
