@@ -4,24 +4,44 @@
  */
 /*global Math, simpleTank*/
 "use strict";
-simpleTank.Map = function () {
+simpleTank.Map = function() {
 	this.init.apply(this, arguments);
 };
 simpleTank.Map.prototype = {
 	nameSpace: simpleTank,
-	init: function (ctx, properties) {
+	init: function(ctx, properties) {
 		this.ctx = ctx;
 		this.width = properties.width;
 		this.height = properties.height;
 		this.startDataValue = Math.round(this.height * 0.6);
 		this.mapData = null;
 		this.wind = 0;
+		
+		//for wind gage bar.
+		// If thie canvasContext class doesn't have  a fillRoundedRect, extend it now
+		if (!ctx.constructor.prototype.fillRoundedRect) {
+			// Extend the canvaseContext class with a fillRoundedRect method
+			ctx.constructor.prototype.fillRoundedRect = function(xx, yy, ww, hh, rad, fill, stroke) {
+				if (typeof(rad) == "undefined") 
+					rad = 5;
+				this.beginPath();
+				this.moveTo(xx + rad, yy);
+				this.arcTo(xx + ww, yy, xx + ww, yy + hh, rad);
+				this.arcTo(xx + ww, yy + hh, xx, yy + hh, rad);
+				this.arcTo(xx, yy + hh, xx, yy, rad);
+				this.arcTo(xx, yy, xx + ww, yy, rad);
+				if (stroke) 
+					this.stroke(); // Default to no stroke
+				if (fill || typeof(fill) == "undefined") 
+					this.fill(); // Default to fill
+			}; // end of fillRoundedRect method
+		}
 	},
-	rndWind: function () {
+	rndWind: function() {
 		this.wind = Math.floor(Math.random() * 5) - 2;
 		this.redraw();
 	},
-	redraw: function () {
+	redraw: function() {
 		var ctx, i, lingrad, gradientStartY, moonX, moonY;
 		ctx = this.ctx;
 		ctx.save();
@@ -34,12 +54,18 @@ simpleTank.Map.prototype = {
 		ctx.fillStyle = lingrad;
 		ctx.fillRect(0, 0, this.width, this.height);
 		//wind
-		lingrad = ctx.createLinearGradient(20, 0, 180, 0);
+		lingrad = ctx.createLinearGradient(20, 0, 220, 0);
 		lingrad.addColorStop(0, "#fff");
 		lingrad.addColorStop((this.wind + 2) / 4, "#00f");
 		lingrad.addColorStop(1, "#fff");
 		ctx.fillStyle = lingrad;
-		ctx.fillRect(20, 20, 160, 20);
+		ctx.fillRoundedRect(20, 20, 200, 30);
+		//pinWheel code. -_-a
+		$("#pinWheel").removeClass();
+		var windClass = Math.abs(this.wind) + 1;
+		setTimeout(function() {
+			$("#pinWheel").removeClass().addClass("wind" + windClass);
+		}, 1);
 		//ground
 		gradientStartY = Math.round(this.height * 0.3);
 		lingrad = ctx.createLinearGradient(0, gradientStartY, 0, this.height - 1);
@@ -59,7 +85,7 @@ simpleTank.Map.prototype = {
 		
 		ctx.restore();
 	},
-	newMapData: function () {
+	newMapData: function() {
 		//only client
 		var i, map, width, changeWidth, dataValue;
 		map = [];
@@ -69,12 +95,12 @@ simpleTank.Map.prototype = {
 		for (i = 0; i < width; i += 1) {
 			map[i] = dataValue += Math.round(Math.random() * (changeWidth * 2)) - changeWidth;
 		}
-		this.mapData = 0.5 < Math.random() ? map: map.reverse();
+		this.mapData = 0.5 < Math.random() ? map : map.reverse();
 	},
-	getDataValue: function (x) {
+	getDataValue: function(x) {
 		return this.mapData[x];
 	},
-	dig: function (x, y, range) {
+	dig: function(x, y, range) {
 		var i, mapData, mapDataValue, width, height, startX, endX, sideX, sideHeight, startY, endY;
 		mapData = this.mapData;
 		width = this.width;
@@ -96,8 +122,7 @@ simpleTank.Map.prototype = {
 				endY = y + sideHeight;
 				if (mapDataValue <= startY) {
 					mapData[i] += sideHeight * 2;
-				}
-				else {
+				} else {
 					if (mapDataValue <= endY) {
 						mapData[i] += endY - mapDataValue;
 					}
