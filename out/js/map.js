@@ -42,7 +42,8 @@ simpleTank.Map.prototype = {
 		this.redraw();
 	},
 	redraw: function() {
-		var ctx, i, lingrad, gradientStartY, moonX, moonY;
+		var thisP, ctx, i, lingrad, gradientStartY, moonX, moonY;
+		thisP = this;
 		ctx = this.ctx;
 		ctx.save();
 		
@@ -62,8 +63,8 @@ simpleTank.Map.prototype = {
 		ctx.fillRoundedRect(20, 20, 200, 30);
 		//pinWheel code. -_-a
 		$("#pinWheel").removeClass();
-		var windClass = Math.abs(this.wind) + 1;
-		setTimeout(function() {
+		setTimeout(function() { //크롬에서 타이머 안주면 애니메이션 속도가 안변해서 타이머줌.
+			var windClass = Math.abs(thisP.wind) + 1;
 			$("#pinWheel").removeClass().addClass("wind" + windClass);
 		}, 1);
 		//ground
