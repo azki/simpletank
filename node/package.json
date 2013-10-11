@@ -1,0 +1,22 @@
+{
+  "author": "azki",
+  "name": "tank",
+  "version": "0.3.1",
+  "repository": {
+    "type": "git",
+    "url": "git@github.com:azki/simpletank.git"
+  },
+  "dependencies": {
+    "express": "3.4.0",
+	"socket.io": "0.9.16",
+    "request": "2.27.0"
+  },
+  "devDependencies": {},
+  "optionalDependencies": {},
+  "engines": {
+    "node": "*"
+  },
+  "scripts": {
+    "start": "node app.js"
+  }
+}

@@ -4,12 +4,12 @@
  */
 /*global $, Math, document, isFinite, parseInt, setInterval, simpleTank*/
 "use strict";
-simpleTank.Ui = function () {
+simpleTank.Ui = function() {
 	this.init.apply(this, arguments);
 };
 simpleTank.Ui.prototype = {
 	nameSpace: simpleTank,
-	init: function (map, tanks, shot, player, callback) {
+	init: function(map, tanks, shot, player, callback) {
 		this.map = map;
 		this.tanks = tanks;
 		this.shot = shot;
@@ -21,7 +21,7 @@ simpleTank.Ui.prototype = {
 		tanks.redraw();
 		player.initAi({
 			obj: this,
-			redraw: function () {
+			redraw: function() {
 				this.setTurnTank();
 				this.tanks.redraw();
 			},
@@ -32,7 +32,7 @@ simpleTank.Ui.prototype = {
 		this.drawTankHp();
 		this.setTurnTank();
 	},
-	newGame: function (player) {
+	newGame: function(player) {
 		var tanks, shot;
 		tanks = this.tanks;
 		shot = this.shot;
@@ -49,7 +49,7 @@ simpleTank.Ui.prototype = {
 		shot.redraw();
 		player.initAi({
 			obj: this,
-			redraw: function () {
+			redraw: function() {
 				this.setTurnTank();
 				this.tanks.redraw();
 			},
@@ -58,7 +58,7 @@ simpleTank.Ui.prototype = {
 		this.drawTankHp();
 		this.setTurnTank();
 	},
-	startPlayer: function () {
+	nextPlayer: function() {
 		var player, tanks, turn, tank, playerType;
 		player = this.player;
 		tanks = this.tanks;
@@ -70,8 +70,7 @@ simpleTank.Ui.prototype = {
 			if (playerType.substr(0, 2) === "Ai") {
 				player.startAi(turn, tank);
 			}
-		}
-		else {
+		} else {
 			this.shootable = false;
 			if (this.callback) {
 				this.callback({
@@ -80,7 +79,7 @@ simpleTank.Ui.prototype = {
 			}
 		}
 	},
-	drawTankHp: function () {
+	drawTankHp: function() {
 		var i, len, tanks, tank, hp;
 		tanks = this.tanks;
 		len = tanks.count;
@@ -93,7 +92,7 @@ simpleTank.Ui.prototype = {
 			$("#player" + i + "hpBar").width(hp * 3).children(0).text(tank.name + " (hp: " + hp + ")");
 		}
 	},
-	setTurnTank: function () {
+	setTurnTank: function() {
 		var tank, powerValue;
 		tank = this.tank = this.tanks.getTurnTank();
 		if (tank !== null) {
@@ -102,39 +101,10 @@ simpleTank.Ui.prototype = {
 			$("#powerValue").val(powerValue);
 		}
 	},
-	setTankValue: function () {
-		var tank, $dom, value, needRedraw;
-		tank = this.tank;
-		if (tank !== null) {
-			needRedraw = false;
-			$dom = $("#angleValue");
-			value = parseInt($dom.val(), 10);
-			if (-90 <= value && value <= 90) {
-				if (tank.angle !== value) {
-					tank.angle = value;
-					needRedraw = true;
-				}
-			}
-			$dom = $("#powerValue");
-			value = parseInt($dom.val(), 10);
-			if (0 <= value && value <= 99) {
-				value = value / 100;
-				if (tank.power !== value) {
-					tank.power = value;
-					needRedraw = true;
-				}
-			}
-			if (needRedraw) {
-				this.tanks.redraw();
-			}
-			return true;
-		}
-		return false;
-	},
-	initEvent: function () {
+	initEvent: function() {
 		var thisP;
 		thisP = this;
-		$("#canvasPanel").click(function (e) {
+		$("#canvasPanel").click(function(e) {
 			var tank, clickX, clickY, power, angle;
 			tank = thisP.tank;
 			if (thisP.shootable && tank !== null) {
@@ -142,71 +112,17 @@ simpleTank.Ui.prototype = {
 				clickY = isFinite(e.layerX) ? e.layerY : e.offsetY;
 				//power
 				power = Math.round(tank.getFar(clickX, clickY) / 3);
-				if (power < 0) {
-					power = 0;
-				}
-				else {
-					if (99 < power) {
-						power = 99;
-					}
-				}
-				$("#powerValue").val(power);
+				thisP.setPower(thisP.tanks.turn, power);
 				//angle
 				angle = -Math.round((Math.atan((clickY - tank.y) / (clickX - tank.x)) * 180 / Math.PI));
-				if (angle === 0) {
-					angle = 1;
-				}
-				else {
-					if (angle <= -90) {
-						angle = 90;
-					}
-				}
-				$("#angleValue").val(angle);
+				thisP.setAngle(thisP.tanks.turn, angle);
 			}
 		});
-		$("#shoot").click(function () {
-			if (thisP.shootable) {
-				thisP.shootFromEvent({
-					type: "fire"
-				});
-			}
-		});
-		$("#move").click(function () {
-			if (thisP.shootable) {
-				thisP.shootFromEvent({
-					type: "move"
-				});
-			}
-		});
-		$(document).keydown(function (e) {
+		$(document).keydown(function(e) {
 			var keyValue;
 			if (thisP.shootable && e.shift !== true && e.ctrl !== true) {
 				keyValue = e.keyCode;
 				switch (keyValue) {
-				case 65://a
-					thisP.angleDown();
-					break;
-				case 37://<.
-					thisP.angleDown();
-					break;
-				case 68://d
-					thisP.angleUp();
-					break;
-				case 39://>.
-					thisP.angleUp();
-					break;
-				case 83://s
-					thisP.powerDown();
-					break;
-				case 40://v.
-					thisP.powerDown();
-					break;
-				case 87://w
-					thisP.powerUp();
-					break;
-				case 38://^.
-					thisP.powerUp();
-					break;
 				case 70://f
 					thisP.shootFromEvent({
 						type: "fire"
@@ -227,67 +143,71 @@ simpleTank.Ui.prototype = {
 				}
 			}
 		});
-		setInterval(function () {
-			if (thisP.shootable) {
-				thisP.setTankValue();
-			}
-		}, 250);
 	},
-	angleDown: function () {
-		var $dom;
-		$dom = $("#angleValue :selected").prev();
-		if (0 < $dom.size()) {
-			$("#angleValue").val($dom.val());
-			return true;
-		}
-		return false;
-	},
-	angleUp: function () {
-		var $dom;
-		$dom = $("#angleValue :selected").next();
-		if (0 < $dom.size()) {
-			$("#angleValue").val($dom.val());
-			return true;
-		}
-		return false;
-	},
-	powerDown: function () {
-		var $dom;
-		$dom = $("#powerValue :selected").prev();
-		if (0 < $dom.size()) {
-			$("#powerValue").val($dom.val());
-			return true;
-		}
-		return false;
-	},
-	powerUp: function () {
-		var $dom;
-		$dom = $("#powerValue :selected").next();
-		if (0 < $dom.size()) {
-			$("#powerValue").val($dom.val());
-			return true;
-		}
-		return false;
-	},
-	shootFromEvent: function (option) {
+	shootFromEvent: function(option) {
 		this.shootable = false;
-		if (this.setTankValue()) {
-			this.shoot(option, null);
-		}
+		this.shoot(option, null);
 	},
-	shoot: function (option, callback) {
+	shoot: function(option, callback) {
 		var shot, thisP;
 		thisP = this;
 		shot = this.shot;
 		shot.initShot(option);
-		shot.shoot(function (result) {
+		shot.shoot(function(result) {
 			thisP.tanks.passTurn();
 			thisP.drawTankHp();
 			thisP.setTurnTank();
-			thisP.startPlayer();
+			thisP.nextPlayer();
 			if (callback) {
 				callback(result);
 			}
 		});
+	},
+	/*
+	 * setPower
+	 * power : 0 ~ 99
+	 */
+	setPower: function(tankIndex, power) {
+		if (power < 0) {
+			power = 0;
+		} else {
+			if (99 < power) {
+				power = 99;
+			}
+		}
+		var tank = this.tanks.getTank(tankIndex);
+		if (tank !== null) {
+			power /= 100;
+			if (tank.power !== power) {
+				tank.power = power;
+				this.tanks.redraw();
+			}
+		}
+	},
+	/*
+	 * setAngle
+	 * angle : 1 ~ 179
+	 */
+	setAngle: function(tankIndex, angle) {
+		angle %= 180;
+		if (angle === 0) {
+			angle = 1;
+		} else {
+			if (angle <= -90) {
+				angle = 90;
+			}
+		}
+		var tank = this.tanks.getTank(tankIndex);
+		if (tank !== null) {
+			if (tank.angle !== angle) {
+				tank.angle = angle;
+				this.tanks.redraw();
+			}
+		}
+	},
+	fire: function(shootType, callback) {
+		this.shoot({
+			type: shootType
+		}, callback);
 	}
 };
