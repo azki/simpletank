@@ -34,7 +34,7 @@ simpleTank.Tank.prototype = {
 		this.hp = 100;
 		this.power = 0.5;
 		this.tankDepth = 1;
-		this.tankSize = 8;
+		this.tankSize = 14;
 		this.gunLength = 10;
 		this.damageRage = 40;
 		this.damageValue = 50;
@@ -44,7 +44,7 @@ simpleTank.Tank.prototype = {
 		this.hp = 100;
 		this.power = 0.5;
 		this.tankDepth = 1;
-		this.tankSize = 8;
+		this.tankSize = 14;
 		this.gunLength = 10;
 		this.damageRage = 40;
 		this.damageValue = 50;
@@ -84,7 +84,6 @@ simpleTank.Tank.prototype = {
 		ctx.save();
 		
 		ctx.lineWidth = "2";//tank border
-		ctx.lineJoin = "round";
 		ctx.fillStyle = 0 < this.hp ? this.color : "#000";
 		ctx.moveTo(0, -(this.tankDepth + this.tankSize));
 		ctx.lineTo(-this.tankSize, -this.tankDepth);

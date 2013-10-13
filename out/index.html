@@ -1,15 +1,40 @@
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"> 
-<html xmlns="http://www.w3.org/1999/xhtml" lang="ko">
+<!DOCTYPE html>
+<html>
 	<head>
-		<meta http-equiv="content-type" content="application/xhtml+xml; charset=UTF-8" />
+		<meta charset=utf-8>
+		<meta name="viewport" content="user-scalable=no, initial-scale=1.0, width=320" />
+		<meta name="apple-mobile-web-app-capable" content="yes">
+		<meta name="apple-mobile-web-app-status-bar-style" content="black">
 		<title>Simple Tank : tank.azki.org</title>
 		<style type="text/css">
-			html,body {margin:0}
-		</style>
+html,body {margin:0}
+body { font-family:Georgia; }
+.panel {margin:5px; border:1px dotted #999; text-align:center;}
+address {text-align:right;}
+
+
+</style>
+	</head>
+	<body>
+		<div id="status" class="panel">
+			상태메시지
+		</div>
+		<div id="hp" class="panel">
+			hp
+		</div>
+		<div id="angle" class="panel">
+			angle
+		</div>
+		<div id="power" class="panel">
+			power
+		</div>
+		<div id="btns" class="panel">
+			<button id="move" type="button">move</button>
+			<button id="doubleShot" type="button">double shot</button>
+			<button id="shot" type="button">normal shot</button>
+		</div>
+		<address>Simple Tank 0.3.1 by azki( @ azki.org).</address>
 		<script type="text/javascript" src="./js/jquery-1.4.1.min.js"></script>
-<!--[if IE]>
-		<script type="text/javascript" src="./js/excanvas.compiled.js"></script>
-<![endif]-->
 		<script type="text/javascript" src="./js/io.min.js"></script>
 		<script type="text/javascript">
 /*global $,setTimeout,io4azki*/
@@ -18,20 +43,17 @@ $(function () {
 	var socket;
 	socket = io4azki.connect("/tank");
 	socket.on("connect", function() {
-		console.log("connect");
+		var roomNum = prompt("방 이름을 입력하세요");
+		socket.emit("join", roomNum);
+		//TODO send power , angle
 	});
 	socket.on("disconnect", function() {
 		console.log("disconnect");
 	});
+	socket.on("okRoom", function (roomNum) {
+		$("#status").html(roomNum + "방에 입장했어요!");
+	});
 });
 		</script>
-	</head>
-	<body>
-		<div id="canvasPanel">
-			<canvas id="cvmap" style="position:absolute;"></canvas>
-			<canvas id="cvtank" style="position:absolute;"></canvas>
-			<canvas id="cvshot" style="position:absolute;"></canvas>
-		</div>
-		
 	</body>
 </html>

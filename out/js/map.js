@@ -38,8 +38,10 @@ simpleTank.Map.prototype = {
 		}
 	},
 	rndWind: function() {
-		this.wind = Math.floor(Math.random() * 5) - 2;
-		this.redraw();
+		if (Math.random() < 0.2) {
+			this.wind = Math.floor(Math.random() * 5) - 2;
+			this.redraw();
+		}
 	},
 	redraw: function() {
 		var thisP, ctx, i, lingrad, gradientStartY, moonX, moonY;
@@ -62,11 +64,14 @@ simpleTank.Map.prototype = {
 		ctx.fillStyle = lingrad;
 		ctx.fillRoundedRect(20, 20, 200, 30);
 		//pinWheel code. -_-a
-		$("#pinWheel").removeClass();
-		setTimeout(function() { //크롬에서 타이머 안주면 애니메이션 속도가 안변해서 타이머줌.
-			var windClass = Math.abs(thisP.wind) + 1;
-			$("#pinWheel").removeClass().addClass("wind" + windClass);
-		}, 1);
+		if ($("#pinWheel").data("wind") !== this.wind) {
+			$("#pinWheel").data("wind", this.wind);
+			$("#pinWheel").removeClass();
+			setTimeout(function() { //크롬에서 타이머 안주면 애니메이션 속도가 안변해서 타이머줌.
+				var windClass = Math.abs(thisP.wind) + 1;
+				$("#pinWheel").removeClass().addClass("wind" + windClass);
+			}, 1);
+		}
 		//ground
 		gradientStartY = Math.round(this.height * 0.3);
 		lingrad = ctx.createLinearGradient(0, gradientStartY, 0, this.height - 1);

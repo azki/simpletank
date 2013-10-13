@@ -37,6 +37,11 @@
 			        transform:
 			        rotate(360deg);}
 			}
+			
+			#cvmap {
+				background:-moz-linear-gradient(top, #040429, #257eb7);
+    			background:-webkit-gradient(linear, left top, left bottom, color-stop(0%,#040429), color-stop(100%,#257eb7));
+			}
 		</style>
 		<script type="text/javascript" src="./js/jquery-1.4.1.min.js">
 		</script>
@@ -63,77 +68,110 @@
 		<script type="text/javascript" src="./js/ui.js">
 		</script>
 		<script type="text/javascript">
-			/*global $,setTimeout,simpleTank,io4azki*/
-			"use strict";
-			$(function() {
-				var mapWidth, mapHeight, i, cvmap, cvtank, cvshot, mapCtx, tankCtx, shotCtx, map, tanks, shot, player, ui;
-				mapWidth = innerWidth;
-				mapHeight = innerHeight;
-				$("#canvasPanel").width(mapWidth).height(mapHeight);
-				$("#canvasPanel>canvas").attr("width", mapWidth).attr("height", mapHeight);
-				cvmap = $("#cvmap").get(0);
-				cvtank = $("#cvtank").get(0);
-				cvshot = $("#cvshot").get(0);
-				if (cvmap.getContext) {
-					mapCtx = cvmap.getContext("2d");
-					tankCtx = cvtank.getContext("2d");
-					shotCtx = cvshot.getContext("2d");
-					map = new simpleTank.Map(mapCtx, {
-						width: mapWidth,
-						height: mapHeight
-					});
-					tanks = new simpleTank.Tanks(tankCtx, {
-						map: map
-					});
-					shot = new simpleTank.Shot(shotCtx, {
-						map: map,
-						tanks: tanks
-					});
-					
-					map.newMapData();
-					map.redraw();
-					
-					player = new simpleTank.Player([{
-						type: "user",
-						color: "#f00",
-						name: "유저1",
-						team: 1
-					}, {
-						type: "Ai04",
-						difficulty: 5,
-						color: "#00f",
-						name: "컴퓨터1",
-						team: 2
-					}, {
-						type: "user",
-						color: "#ff0",
-						name: "유저2",
-						team: 3
-					}, {
-						type: "Ai04",
-						difficulty: 10,
-						color: "#f0f",
-						name: "컴퓨터2",
-						team: 4
-					}]);
-					ui = new simpleTank.Ui(map, tanks, shot, player, function(result) {
-						if (result.type === "turnLost") {
-							setTimeout(function() {
-								map.newMapData();
-								map.redraw();
-								ui.newGame(player);
-								ui.nextPlayer();
-							}, 3000);
-						}
-					});
-					ui.nextPlayer();
-					
-					//temp
-					window.dd = ui;
-				} else {
-					$("#canvasPanel").html("<h1>Canvas를 지원하지 않는 브라우저입니다.</h1>");
-				}
-			});
+/*global $,setTimeout,simpleTank,io4azki*/
+"use strict";
+$(function() {
+	var mapWidth, mapHeight, i, cvmap, cvtank, cvshot, mapCtx, tankCtx, shotCtx, map, tanks, shot;
+	mapWidth = innerWidth;
+	mapHeight = innerHeight;
+	$("#canvasPanel").width(mapWidth).height(mapHeight);
+	$("#canvasPanel>canvas").attr("width", mapWidth).attr("height", mapHeight);
+	cvmap = $("#cvmap").get(0);
+	cvtank = $("#cvtank").get(0);
+	cvshot = $("#cvshot").get(0);
+	if (cvmap.getContext) {
+		mapCtx = cvmap.getContext("2d");
+		tankCtx = cvtank.getContext("2d");
+		shotCtx = cvshot.getContext("2d");
+		map = new simpleTank.Map(mapCtx, {
+			width: mapWidth,
+			height: mapHeight
+		});
+		tanks = new simpleTank.Tanks(tankCtx, {
+			map: map
+		});
+		shot = new simpleTank.Shot(shotCtx, {
+			map: map,
+			tanks: tanks
+		});
+		map.newMapData();
+		map.redraw();
+		
+		startFirstGame(map, tanks, shot);
+	} else {
+		$("#canvasPanel").html("<h1>Canvas를 지원하지 않는 브라우저입니다.</h1>");
+	}
+});
+
+function startFirstGame(map, tanks, shot) {
+	var player, ui;
+	player = new simpleTank.Player([{
+		type: "user",
+		color: "#f00",
+		name: "유저1",
+		team: 1
+	}, {
+		type: "Ai04",
+		difficulty: 5,
+		color: "#00f",
+		name: "컴퓨터1",
+		team: 2
+	}, {
+		type: "user",
+		color: "#ff0",
+		name: "유저2",
+		team: 3
+	}, {
+		type: "Ai04",
+		difficulty: 10,
+		color: "#f0f",
+		name: "컴퓨터2",
+		team: 4
+	}]);
+	ui = new simpleTank.Ui(map, tanks, shot, player, function(result) {
+		if (result.type === "turnLost") {
+			setTimeout(function() {
+				map.newMapData();
+				map.redraw();
+				ui.newGame(player);
+				ui.nextPlayer();
+			}, 3000);
+		}
+	});
+	ui.nextPlayer();
+	
+	//temp
+	window.tankUi = ui;
+	
+	initSock();
+}
+function initSock () {
+	var socket;
+	socket = io4azki.connect("/tank");
+	socket.on("connect", function() {
+		socket.emit("createRoom");
+	});
+	socket.on("disconnect", function() {
+		//TODO.
+		console.log("disconnect");
+	});
+	socket.on("newRoom", function(roomNum) {
+		//TODO Ui
+		console.log("newRoom" + roomNum);
+	});
+	socket.on("setPower", function(tankIndex, power) {
+		tankUi.setPower(tankIndex, power);
+	});
+	socket.on("setAngle", function(tankIndex, angle) {
+		tankUi.setAngle(tankIndex, angle);
+	});
+	socket.on("fire", function(type) {
+		tankUi.fire(type, function () {
+			//TODO nextTurn
+			console.log('TODO nextTurn');
+		});
+	});
+}
 		</script>
 	</head>
 	<body>

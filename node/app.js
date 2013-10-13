@@ -26,6 +26,8 @@ server.listen(89);
 //remotor
 
 var sockMap = {};
+var roomCount = 0;
+var roomArr = [];
 
 io.of('/tank').on('connection', function(socket) {
 	var sockId = socket.id;
@@ -39,6 +41,37 @@ io.of('/tank').on('connection', function(socket) {
 			hello: 2
 		});
 	});
+	
+	//mon - 방 만들기
+	socket.on('createRoom', function() {
+		roomArr[roomCount] = {
+			mon: sockId
+		};
+		socket.emit('newRoom', roomCount);
+		roomCount += 1;
+	});
+	//mon - 방 들어오기
+	socket.on('join', function(roomNum) {
+		if (!roomArr[roomNum]) {
+			//TODO return error
+			return;
+		}
+		var monSockId = roomArr[roomNum].mon;
+		if (monSockId in sockMap == false) {
+			//TODO return error
+			return;
+		}
+		socket.emit('okRoom', roomNum);
+	});
+	
+	
+	//mon - 게임시작
+	
+	//mon - 누구의 차례인가 (유저 / 논유저)
+	
+	//mon - 게임 끝
+	
+	
 	
 	
 });

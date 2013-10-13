@@ -149,17 +149,21 @@ simpleTank.Ui.prototype = {
 		this.shoot(option, null);
 	},
 	shoot: function(option, callback) {
-		var shot, thisP;
+		var thisP, tanks, shot;
 		thisP = this;
+		tanks = this.tanks;
 		shot = this.shot;
 		shot.initShot(option);
 		shot.shoot(function(result) {
-			thisP.tanks.passTurn();
+			tanks.passTurn();
 			thisP.drawTankHp();
 			thisP.setTurnTank();
 			thisP.nextPlayer();
 			if (callback) {
 				callback(result);
+			}
+			if (thisP.onNewTurn) {
+				thisP.onNewTurn(tanks.turn);
 			}
 		});
 	},

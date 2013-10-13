@@ -41,7 +41,7 @@ simpleTank.Tanks.prototype = {
 			}
 			tankAngle = randX * 2 < mapWidth ? 45 : -45;
 			tank = tanks[i] = new this.nameSpace.Tank(this.ctx, {
-				type: player.isAi(i) ? 2 : 1,
+				type: 1, //동그란 모양만.
 				x: randX,
 				y: this.map.getDataValue(randX),
 				angle: tankAngle,
@@ -105,7 +105,7 @@ simpleTank.Tanks.prototype = {
 		ctx.save();
 		
 		ctx.clearRect(0, 0, mapWidth, mapHeight);
-		this.drawTurn(ctx, mapWidth - (140 + len * 40), 20, 10);
+		this.drawTurn(ctx, mapWidth - (160 + len * 40), 20, 10);
 		this.drawAssist(ctx);
 		this.drawHp(ctx, mapWidth - (50 + len * 40), 20, 10, 15);
 		for (i = 0; i < len; i += 1) {
@@ -191,7 +191,7 @@ simpleTank.Tanks.prototype = {
 			tank = this.tankArr[this.turn];
 			tankX = tank.x;
 			tankY = tank.y;
-			tank.x = x + (size + space) * 5;
+			tank.x = x + (size + space) * 6;
 			tank.y = y + 12;
 			tank.redraw();
 			tank.x = tankX;
