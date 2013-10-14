@@ -3,7 +3,7 @@
  * @author azki (azki@azki.org)
  */
 /*jslint regexp:false,nomen:false,white:false*/
-/*global Math, simpleTank, $*/
+/*global Math, simpleTank*/
 "use strict";
 simpleTank.Map = function() {
 	this.init.apply(this, arguments);
@@ -48,8 +48,7 @@ simpleTank.Map.prototype = {
 		}
 	},
 	redraw: function() {
-		var thisP, ctx, i, lingrad, gradientStartY, moonX, moonY;
-		thisP = this;
+		var ctx, i, lingrad, gradientStartY, moonX, moonY;
 		ctx = this.ctx;
 		ctx.save();
 		
@@ -68,15 +67,6 @@ simpleTank.Map.prototype = {
 		lingrad.addColorStop(1, "#F7E967");
 		ctx.fillStyle = lingrad;
 		ctx.fillRoundedRect(20, 20, 200, 30);
-		//pinWheel code. -_-a
-		if ($("#pinWheel").data("wind") !== this.wind) {
-			$("#pinWheel").data("wind", this.wind);
-			$("#pinWheel").removeClass();
-			setTimeout(function() { //크롬에서 타이머 안주면 애니메이션 속도가 안변해서 타이머줌.
-				var windClass = Math.abs(thisP.wind) + 1;
-				$("#pinWheel").removeClass().addClass("wind" + windClass);
-			}, 1);
-		}
 		//ground
 		gradientStartY = Math.round(this.height * 0.3);
 		lingrad = ctx.createLinearGradient(0, gradientStartY, 0, this.height - 1);

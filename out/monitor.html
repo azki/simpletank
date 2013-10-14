@@ -3,46 +3,34 @@
 	<head>
 		<meta http-equiv="content-type" content="application/xhtml+xml; charset=UTF-8" />
 		<title>Simple Tank : tank.azki.org</title>
-		<style type="text/css">
+		<style type="text/css">		
 			html, body {
 			    margin: 0
 			}
 			
-			.wind1 {
-			    -webkit-animation: spin 6s linear infinite;
-			    -moz-animation: spin 6s linear infinite;
-			    animation: spin 6s linear infinite;
-			}
-			.wind2 {
-			    -webkit-animation: spin 2s linear infinite;
-			    -moz-animation: spin 2s linear infinite;
-			    animation: spin 2s linear infinite;
-			}
-			.wind3 {
-			    -webkit-animation: spin 1s linear infinite;
-			    -moz-animation: spin 1s linear infinite;
-			    animation: spin 1s linear infinite;
-			}
-			@-moz-keyframes spin {
-			    100% {-moz-transform:
-			        rotate(360deg);}
-			}
-			@-webkit-keyframes spin {
-			    100% {-webkit-transform:
-			        rotate(360deg);}
-			}
-			@keyframes spin {
-			    100% {-webkit-transform:
-			        rotate(360deg);
-			        transform:
-			        rotate(360deg);}
-			}
-			
 			#cvmap {
-				background:-moz-linear-gradient(top, #040429, #257eb7);
+		    	background: -moz-linear-gradient(top, #040429, #257eb7);
     			background:-webkit-gradient(linear, left top, left bottom, color-stop(0%,#040429), color-stop(100%,#257eb7));
 			}
+			
+			#message {
+				top:20px;
+				width:300px;
+				background: #2F2933;
+				padding: 20px 10px;
+				text-align: center;
+				border-radius: 10px;
+				font-weight: bold;
+				color: #fff;
+			}
+			#message b {
+				font-size: xx-large;
+				color: #FFFFA6;
+			}
+			
 		</style>
+		<link rel="stylesheet" href="./css/animate-wind.css"/>
+		<link rel="stylesheet" href="./css/animate-custom.css"/>
 		<script type="text/javascript" src="./js/jquery-1.4.1.min.js">
 		</script>
 		<!--[if IE]>
@@ -68,110 +56,115 @@
 		<script type="text/javascript" src="./js/ui.js">
 		</script>
 		<script type="text/javascript">
-/*global $,setTimeout,simpleTank,io4azki*/
-"use strict";
-$(function() {
-	var mapWidth, mapHeight, i, cvmap, cvtank, cvshot, mapCtx, tankCtx, shotCtx, map, tanks, shot;
-	mapWidth = innerWidth;
-	mapHeight = innerHeight;
-	$("#canvasPanel").width(mapWidth).height(mapHeight);
-	$("#canvasPanel>canvas").attr("width", mapWidth).attr("height", mapHeight);
-	cvmap = $("#cvmap").get(0);
-	cvtank = $("#cvtank").get(0);
-	cvshot = $("#cvshot").get(0);
-	if (cvmap.getContext) {
-		mapCtx = cvmap.getContext("2d");
-		tankCtx = cvtank.getContext("2d");
-		shotCtx = cvshot.getContext("2d");
-		map = new simpleTank.Map(mapCtx, {
-			width: mapWidth,
-			height: mapHeight
-		});
-		tanks = new simpleTank.Tanks(tankCtx, {
-			map: map
-		});
-		shot = new simpleTank.Shot(shotCtx, {
-			map: map,
-			tanks: tanks
-		});
-		map.newMapData();
-		map.redraw();
-		
-		startFirstGame(map, tanks, shot);
-	} else {
-		$("#canvasPanel").html("<h1>Canvas를 지원하지 않는 브라우저입니다.</h1>");
-	}
-});
-
-function startFirstGame(map, tanks, shot) {
-	var player, ui;
-	player = new simpleTank.Player([{
-		type: "user",
-		color: "#f00",
-		name: "유저1",
-		team: 1
-	}, {
-		type: "Ai04",
-		difficulty: 5,
-		color: "#00f",
-		name: "컴퓨터1",
-		team: 2
-	}, {
-		type: "user",
-		color: "#ff0",
-		name: "유저2",
-		team: 3
-	}, {
-		type: "Ai04",
-		difficulty: 10,
-		color: "#f0f",
-		name: "컴퓨터2",
-		team: 4
-	}]);
-	ui = new simpleTank.Ui(map, tanks, shot, player, function(result) {
-		if (result.type === "turnLost") {
-			setTimeout(function() {
-				map.newMapData();
-				map.redraw();
-				ui.newGame(player);
+			/*global $,setTimeout,simpleTank,io4azki*/
+			"use strict";
+			$(function() {
+				var mapWidth, mapHeight, i, cvmap, cvtank, cvshot, mapCtx, tankCtx, shotCtx, map, tanks, shot;
+				mapWidth = innerWidth;
+				mapHeight = innerHeight;
+				$("#canvasPanel").width(mapWidth).height(mapHeight);
+				$("#canvasPanel>canvas").attr("width", mapWidth).attr("height", mapHeight);
+				cvmap = $("#cvmap").get(0);
+				cvtank = $("#cvtank").get(0);
+				cvshot = $("#cvshot").get(0);
+				if (cvmap.getContext) {
+					mapCtx = cvmap.getContext("2d");
+					tankCtx = cvtank.getContext("2d");
+					shotCtx = cvshot.getContext("2d");
+					map = new simpleTank.Map(mapCtx, {
+						width: mapWidth,
+						height: mapHeight
+					});
+					tanks = new simpleTank.Tanks(tankCtx, {
+						map: map
+					});
+					shot = new simpleTank.Shot(shotCtx, {
+						map: map,
+						tanks: tanks
+					});
+					map.newMapData();
+					map.redraw();
+					
+					startFirstGame(map, tanks, shot);
+				} else {
+					$("#canvasPanel").html("<h1>Canvas를 지원하지 않는 브라우저입니다.</h1>");
+				}
+			});
+			
+			function startFirstGame(map, tanks, shot) {
+				var player, ui;
+				player = new simpleTank.Player([{
+					type: "user",
+					color: "#f00",
+					name: "유저1",
+					team: 1
+				}, {
+					type: "Ai04",
+					difficulty: 1,
+					color: "#00f",
+					name: "컴퓨터1",
+					team: 2
+				}, {
+					type: "Ai04",
+					difficulty: 3,
+					color: "#ff0",
+					name: "컴퓨터2",
+					team: 3
+				}, {
+					type: "Ai04",
+					difficulty: 9,
+					color: "#f0f",
+					name: "컴퓨터3",
+					team: 4
+				}]);
+				ui = new simpleTank.Ui(map, tanks, shot, player, function(result) {
+					if (result.type === "turnLost") {
+						setTimeout(function() {
+							map.newMapData();
+							map.redraw();
+							ui.newGame(player);
+							ui.nextPlayer();
+						}, 3000);
+					}
+				});
+				window.tankUi = ui;
+				ui.onNewTurn = function () {
+					console.log("onNewTurn", arguments);
+				};
 				ui.nextPlayer();
-			}, 3000);
-		}
-	});
-	ui.nextPlayer();
-	
-	//temp
-	window.tankUi = ui;
-	
-	initSock();
-}
-function initSock () {
-	var socket;
-	socket = io4azki.connect("/tank");
-	socket.on("connect", function() {
-		socket.emit("createRoom");
-	});
-	socket.on("disconnect", function() {
-		//TODO.
-		console.log("disconnect");
-	});
-	socket.on("newRoom", function(roomNum) {
-		//TODO Ui
-		console.log("newRoom" + roomNum);
-	});
-	socket.on("setPower", function(tankIndex, power) {
-		tankUi.setPower(tankIndex, power);
-	});
-	socket.on("setAngle", function(tankIndex, angle) {
-		tankUi.setAngle(tankIndex, angle);
-	});
-	socket.on("fire", function(type) {
-		tankUi.fire(type, function () {
-			//TODO nextTurn
-			console.log('TODO nextTurn');
-		});
-	});
-}
+				initSock();
+			}
+			
+			function initSock() {
+				var socket;
+				socket = io4azki.connect("/tank");
+				socket.on("connect", function() {
+					socket.emit("createRoom");
+				});
+				socket.on("disconnect", function() {
+					$("#message").removeClass().addClass("animated bounceOutDown");
+				});
+				socket.on("newRoom", function(roomNum) {
+					$("#message")
+					.show()
+					.css("left", ((innerWidth - 300) / 2) + "px")
+					.html('<p>모바일에서<br/><b>http://azki.org:89</b><br/>로 접속하세요.</p>방 번호 : <b>' + roomNum + '</b>')
+					.removeClass()
+					.addClass("animated bounceInDown");
+				});
+				socket.on("setPower", function(tankIndex, power) {
+					tankUi.setPower(tankIndex, power);
+				});
+				socket.on("setAngle", function(tankIndex, angle) {
+					tankUi.setAngle(tankIndex, angle);
+				});
+				socket.on("fire", function(type) {
+					tankUi.fire(type, function() {
+						//TODO nextTurn
+						console.log('TODO nextTurn');
+					});
+				});
+			}
 		</script>
 	</head>
 	<body>
@@ -183,6 +176,10 @@ function initSock () {
 			<canvas id="cvshot" style="position:absolute;">
 			</canvas>
 			<img id="pinWheel" src="img/pinwheel.png" style="position:absolute;top:10px;left:95px;"/>
+		</div>
+		<div id="message" style="position:absolute; display:none;">
+		</div>
+		<div id="thisIsMyTurn" style="position:absolute; display:none;">
 		</div>
 	</body>
 </html>

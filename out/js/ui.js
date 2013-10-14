@@ -71,6 +71,9 @@ simpleTank.Ui.prototype = {
 			if (playerType.substr(0, 2) === "Ai") {
 				player.startAi(turn, tank);
 			}
+			if (this.onNewTurn) {
+				this.onNewTurn(tanks.turn);
+			}
 		} else {
 			this.shootable = false;
 			if (this.callback) {
@@ -78,6 +81,20 @@ simpleTank.Ui.prototype = {
 					type: "turnLost"
 				});
 			}
+		}
+		this.drawPinWheel();
+	},
+	drawPinWheel: function () {
+		var map = this.map;
+		if ($("#pinWheel").data("wind") !== map.wind) {
+			$("#pinWheel")
+			.data("wind", map.wind)
+			.css("margin-left", (map.wind * 40) + "px")
+			.removeClass();
+			setTimeout(function() { //크롬에서 타이머 안주면 애니메이션 속도가 안변해서 타이머줌.
+				var windClass = Math.abs(map.wind) + 1;
+				$("#pinWheel").removeClass().addClass("wind" + windClass);
+			}, 1);
 		}
 	},
 	drawTankHp: function() {
@@ -162,9 +179,6 @@ simpleTank.Ui.prototype = {
 			thisP.nextPlayer();
 			if (callback) {
 				callback(result);
-			}
-			if (thisP.onNewTurn) {
-				thisP.onNewTurn(tanks.turn);
 			}
 		});
 	},
