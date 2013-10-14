@@ -2,25 +2,26 @@
  * Tanks
  * @author azki (azki@azki.org)
  */
+/*jslint regexp:false,nomen:false,white:false*/
 /*global Math, simpleTank*/
 "use strict";
-simpleTank.Tanks = function () {
+simpleTank.Tanks = function() {
 	this.init.apply(this, arguments);
 };
 simpleTank.Tanks.prototype = {
 	nameSpace: simpleTank,
-	init: function (ctx, properties) {
+	init: function(ctx, properties) {
 		this.ctx = ctx;
 		this.map = properties.map || null;
 		this.count = 0;
 		this.tankArr = [];
 		this.turn = 0;
 	},
-	newTanks: function () {
+	newTanks: function() {
 		this.initTanks();
 		this.redraw();
 	},
-	initTanks: function (player) {
+	initTanks: function(player) {
 		//only client
 		var i, j, len, tanks, tank, mapWidth, randX, tankAngle, needNewX;
 		this.turn = 0;
@@ -51,7 +52,7 @@ simpleTank.Tanks.prototype = {
 			tank.initTank();
 		}
 	},
-	land: function () {
+	land: function() {
 		var i, len, tanks, tank, mapY, needRedraw;
 		tanks = this.tankArr;
 		len = this.count;
@@ -71,7 +72,7 @@ simpleTank.Tanks.prototype = {
 			this.redraw();
 		}
 	},
-	passTurn: function () {
+	passTurn: function() {
 		var tanks, oriTurn, turn;
 		tanks = this.tankArr;
 		oriTurn = this.turn;
@@ -94,7 +95,7 @@ simpleTank.Tanks.prototype = {
 		this.turn = turn;
 		this.redraw();
 	},
-	redraw: function () {
+	redraw: function() {
 		var ctx, i, len, tanks, mapWidth, mapHeight;
 		ctx = this.ctx;
 		mapWidth = this.map.width;
@@ -121,7 +122,7 @@ simpleTank.Tanks.prototype = {
 	 * @param {number} y
 	 * @param {number} size
 	 */
-	drawTurn: function (ctx, x, y, size) {
+	drawTurn: function(ctx, x, y, size) {
 		var x2, y2, space, tank, tankX, tankY;
 		space = 3;
 		
@@ -198,8 +199,8 @@ simpleTank.Tanks.prototype = {
 			tank.y = tankY;
 		}
 	},
-	drawAssist: function (ctx) {
-		var tank, tankGunX, tankGunY, tankAngle, assistX, assistY, assistArcArr, i, assistX2, assistY2, assistX3, assistY3;
+	drawAssist: function(ctx) {
+		var tank, tankGunX, tankGunY, tankAngle, assistX, assistY, assistArcArr, i, assistX2, assistY2, assistX3, assistY3, gradient;
 		if (0 <= this.turn) {
 			tank = this.tankArr[this.turn];
 			tankGunX = tank.x + tank.getGunX();
@@ -214,16 +215,16 @@ simpleTank.Tanks.prototype = {
 			
 			ctx.save();
 			ctx.lineWidth = "1";
-			var gradient = ctx.createLinearGradient(tankGunX, tankGunY, assistX, assistY);
+			gradient = ctx.createLinearGradient(tankGunX, tankGunY, assistX, assistY);
 			gradient.addColorStop(0, 'rgba(0, 0, 0, 0.3)');
-            gradient.addColorStop(1, 'rgba(0, 0, 0, 0)');
-            ctx.strokeStyle = gradient;
+			gradient.addColorStop(1, 'rgba(0, 0, 0, 0)');
+			ctx.strokeStyle = gradient;
 			ctx.beginPath();
-			for (i = 1; i < 20; i+=2) {
+			for (i = 1; i < 20; i += 2) {
 				assistX2 = -Math.round(i * 10 * Math.cos(tankAngle * Math.PI / 180)) + tankGunX;
 				assistY2 = Math.round(i * 10 * Math.sin(tankAngle * Math.PI / 180)) + tankGunY;
-				assistX3 = -Math.round((i+1) * 10 * Math.cos(tankAngle * Math.PI / 180)) + tankGunX;
-				assistY3 = Math.round((i+1) * 10 * Math.sin(tankAngle * Math.PI / 180)) + tankGunY;
+				assistX3 = -Math.round((i + 1) * 10 * Math.cos(tankAngle * Math.PI / 180)) + tankGunX;
+				assistY3 = Math.round((i + 1) * 10 * Math.sin(tankAngle * Math.PI / 180)) + tankGunY;
 				ctx.moveTo(assistX2, assistY2);
 				ctx.lineTo(assistX3, assistY3);
 			}
@@ -232,7 +233,7 @@ simpleTank.Tanks.prototype = {
 			ctx.restore();
 		}
 	},
-	drawHp: function (ctx, x, y, size, circleSize) {
+	drawHp: function(ctx, x, y, size, circleSize) {
 		var x2, y2, space, tanks, len, i, tank, endAngle;
 		space = 3;
 		
@@ -296,7 +297,7 @@ simpleTank.Tanks.prototype = {
 				ctx.fillStyle = tank.color;
 				ctx.beginPath();
 				endAngle = Math.PI * 2 * tank.hp / 100 - Math.PI * 0.5;
-				ctx.arc(x2, y2, circleSize - 1, - Math.PI * 0.5, endAngle, false);
+				ctx.arc(x2, y2, circleSize - 1, -Math.PI * 0.5, endAngle, false);
 				ctx.lineTo(x2, y2);
 				ctx.fill();
 			}
@@ -305,13 +306,13 @@ simpleTank.Tanks.prototype = {
 		
 		ctx.restore();
 	},
-	getTank: function (index) {
+	getTank: function(index) {
 		return this.tankArr[index];
 	},
-	getTurnTank: function () {
+	getTurnTank: function() {
 		return 0 <= this.turn ? this.tankArr[this.turn] : null;
 	},
-	getFar: function (x, y) {
+	getFar: function(x, y) {
 		var i, len, tanks, min, far;
 		tanks = this.tankArr;
 		len = this.count;
@@ -323,7 +324,7 @@ simpleTank.Tanks.prototype = {
 		}
 		return min;
 	},
-	getGunX: function () {
+	getGunX: function() {
 		//only client.
 		var tank;
 		if (0 <= this.turn) {
@@ -332,7 +333,7 @@ simpleTank.Tanks.prototype = {
 		}
 		throw "getGunX";
 	},
-	getGunY: function () {
+	getGunY: function() {
 		//only client.
 		var tank;
 		if (0 <= this.turn) {
@@ -341,7 +342,7 @@ simpleTank.Tanks.prototype = {
 		}
 		throw "getGunY";
 	},
-	getAngle: function () {
+	getAngle: function() {
 		//only client.
 		var tank;
 		if (0 <= this.turn) {
@@ -350,7 +351,7 @@ simpleTank.Tanks.prototype = {
 		}
 		throw "getAngle";
 	},
-	getPower: function () {
+	getPower: function() {
 		//only client.
 		var tank;
 		if (0 <= this.turn) {
@@ -359,7 +360,7 @@ simpleTank.Tanks.prototype = {
 		}
 		throw "getPower";
 	},
-	getColor: function () {
+	getColor: function() {
 		//only client.
 		var tank;
 		if (0 <= this.turn) {
@@ -368,7 +369,7 @@ simpleTank.Tanks.prototype = {
 		}
 		throw "getColor";
 	},
-	getDamageRage: function () {
+	getDamageRage: function() {
 		//only client.
 		var tank;
 		if (0 <= this.turn) {
@@ -377,7 +378,7 @@ simpleTank.Tanks.prototype = {
 		}
 		throw "getDamageRage";
 	},
-	getDamageValue: function () {
+	getDamageValue: function() {
 		//only client.
 		var tank;
 		if (0 <= this.turn) {
@@ -386,7 +387,7 @@ simpleTank.Tanks.prototype = {
 		}
 		throw "getDamageValue";
 	},
-	damage: function (x, y, range, value) {
+	damage: function(x, y, range, value) {
 		var i, len, tank, tanks, far, damageRange, needRedraw;
 		tanks = this.tankArr;
 		len = this.count;
@@ -406,7 +407,7 @@ simpleTank.Tanks.prototype = {
 			this.redraw();
 		}
 	},
-	spentDoubleShot: function () {
+	spentDoubleShot: function() {
 		//only client.
 		if (this.turn < 0) {
 			throw "getDamageRage";

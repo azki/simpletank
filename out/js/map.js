@@ -2,7 +2,8 @@
  * Map
  * @author azki (azki@azki.org)
  */
-/*global Math, simpleTank*/
+/*jslint regexp:false,nomen:false,white:false*/
+/*global Math, simpleTank, $*/
 "use strict";
 simpleTank.Map = function() {
 	this.init.apply(this, arguments);
@@ -22,18 +23,21 @@ simpleTank.Map.prototype = {
 		if (!ctx.constructor.prototype.fillRoundedRect) {
 			// Extend the canvaseContext class with a fillRoundedRect method
 			ctx.constructor.prototype.fillRoundedRect = function(xx, yy, ww, hh, rad, fill, stroke) {
-				if (typeof(rad) == "undefined") 
+				if (typeof(rad) === "undefined") {
 					rad = 5;
+				}
 				this.beginPath();
 				this.moveTo(xx + rad, yy);
 				this.arcTo(xx + ww, yy, xx + ww, yy + hh, rad);
 				this.arcTo(xx + ww, yy + hh, xx, yy + hh, rad);
 				this.arcTo(xx, yy + hh, xx, yy, rad);
 				this.arcTo(xx, yy, xx + ww, yy, rad);
-				if (stroke) 
+				if (stroke) {
 					this.stroke(); // Default to no stroke
-				if (fill || typeof(fill) == "undefined") 
+				}
+				if (fill || typeof(fill) === "undefined") {
 					this.fill(); // Default to fill
+				}
 			}; // end of fillRoundedRect method
 		}
 	},
@@ -52,15 +56,16 @@ simpleTank.Map.prototype = {
 		ctx.clearRect(0, 0, this.width, this.height);
 		//sky
 		lingrad = ctx.createLinearGradient(0, 0, 0, this.height - 1);
-		lingrad.addColorStop(0, "#bbb");
-		lingrad.addColorStop(1, "#fff");
+		lingrad.addColorStop(0, "#04BFBF");
+		lingrad.addColorStop(0.5, "#CAFCD8");
+		lingrad.addColorStop(1, "#FFFFFF");
 		ctx.fillStyle = lingrad;
 		ctx.fillRect(0, 0, this.width, this.height);
 		//wind
 		lingrad = ctx.createLinearGradient(20, 0, 220, 0);
-		lingrad.addColorStop(0, "#fff");
+		lingrad.addColorStop(0, "#F7E967");
 		lingrad.addColorStop((this.wind + 2) / 4, "#00f");
-		lingrad.addColorStop(1, "#fff");
+		lingrad.addColorStop(1, "#F7E967");
 		ctx.fillStyle = lingrad;
 		ctx.fillRoundedRect(20, 20, 200, 30);
 		//pinWheel code. -_-a
@@ -75,8 +80,9 @@ simpleTank.Map.prototype = {
 		//ground
 		gradientStartY = Math.round(this.height * 0.3);
 		lingrad = ctx.createLinearGradient(0, gradientStartY, 0, this.height - 1);
-		lingrad.addColorStop(0, "#00ff00");
-		lingrad.addColorStop(1, "#004000");
+		lingrad.addColorStop(0, "#FFFFFF");
+		lingrad.addColorStop(0.5, "#588F27");
+		lingrad.addColorStop(1, "#00261C");
 		ctx.fillStyle = lingrad;
 		ctx.beginPath();
 		ctx.moveTo(this.width - 1, this.height - 1);

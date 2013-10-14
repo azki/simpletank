@@ -2,14 +2,17 @@
  * Shot
  * @author azki (azki@azki.org)
  */
+/*jslint regexp:false,nomen:false,white:false*/
 /*global Date, Math, clearTimeout, setTimeout, simpleTank*/
+/*global createExplosion*/
 "use strict";
-simpleTank.Shot = function () {
+var BOMB_DELAY = 1000;
+simpleTank.Shot = function() {
 	this.init.apply(this, arguments);
 };
 simpleTank.Shot.prototype = {
 	nameSpace: simpleTank,
-	init: function (ctx, properties) {
+	init: function(ctx, properties) {
 		this.ctx = ctx;
 		this.map = properties.map || null;
 		this.tanks = properties.tanks || null;
@@ -22,12 +25,12 @@ simpleTank.Shot.prototype = {
 		this.damageValue = 0;
 		this.shooting = false;
 		this.explosion = false;
-		this.explosionLevel = 0;
 		this.callback = null;
 		this.shotOption = null;
 		this.timer = null;
+		this.particles = [];
 	},
-	initShot: function (option) {
+	initShot: function(option) {
 		var tanks, angle, power;
 		if (option && option.type === "test") {
 			this.x = option.x;
@@ -57,7 +60,7 @@ simpleTank.Shot.prototype = {
 		this.explosion = false;
 		this.shotOption = option ? option : {};
 	},
-	shoot: function (callback) {
+	shoot: function(callback) {
 		var timerFn, thisP, drawDelay, loop, loopPerFrame, wind, gravity, beforeDate, isTest;
 		if (callback) {
 			this.callback = callback;
@@ -72,7 +75,7 @@ simpleTank.Shot.prototype = {
 		this.shooting = true;
 		this.explosion = false;
 		isTest = this.shotOption.type === "test";
-		timerFn = function () {
+		timerFn = function() {
 			thisP.x += thisP.speedX;
 			thisP.x += wind;
 			thisP.y += thisP.speedY;
@@ -80,8 +83,7 @@ simpleTank.Shot.prototype = {
 			if (thisP.isHit()) {
 				thisP.hit();
 				thisP.timer = null;
-			}
-			else {
+			} else {
 				loop += 1;
 				if (isTest === false && loop % loopPerFrame === 0) {
 					if (loopPerFrame < 100 && 2 < Math.round(((new Date()) - beforeDate) / loopPerFrame)) {
@@ -90,8 +92,7 @@ simpleTank.Shot.prototype = {
 					beforeDate = new Date();
 					thisP.redraw();
 					thisP.timer = setTimeout(timerFn, drawDelay);
-				}
-				else {
+				} else {
 					timerFn();
 				}
 			}
@@ -102,18 +103,18 @@ simpleTank.Shot.prototype = {
 			this.timer = setTimeout(timerFn, drawDelay);
 		}
 	},
-	stop: function () {
+	stop: function() {
 		if (this.timer !== null) {
 			clearTimeout(this.timer);
 		}
 	},
-	isHit: function () {
+	isHit: function() {
 		var x, y;
 		x = Math.round(this.x);
 		y = Math.round(this.y);
 		return this.map.height <= y || this.map.getDataValue(x) <= y || this.tanks.getFar(x, y) <= 5;
 	},
-	hit: function () {
+	hit: function() {
 		var x, y;
 		x = Math.round(this.x);
 		y = Math.round(this.y);
@@ -141,7 +142,7 @@ simpleTank.Shot.prototype = {
 			}
 		}
 	},
-	shootTest: function () {
+	shootTest: function() {
 		var x, y;
 		x = Math.round(this.x);
 		y = Math.round(this.y);
@@ -154,7 +155,7 @@ simpleTank.Shot.prototype = {
 			this.callback = null;
 		}
 	},
-	shootMove: function (x) {
+	shootMove: function(x) {
 		var tanks, tank;
 		tanks = this.tanks;
 		tank = tanks.getTurnTank();
@@ -170,24 +171,34 @@ simpleTank.Shot.prototype = {
 			this.callback = null;
 		}
 	},
-	shootExplosion: function () {
-		var thisP;
-		this.explosion = true;
-		this.explosionLevel = 0;
-		this.redraw();
+	shootExplosion: function() {
+		var thisP, bombStartTime, bombTimer;
 		thisP = this;
-		this.timer = setTimeout(function () {
-			thisP.explosionLevel = 1;
+		this.explosion = true;
+		this.redraw();
+		
+		this.particles = [];
+		createExplosion(this.particles, this.x, this.y, this.color);
+		createExplosion(this.particles, this.x, this.y, "#525252");
+		
+		bombStartTime = new Date();
+		bombTimer = setInterval(function() {
+			// update and draw particles
 			thisP.redraw();
-			thisP.timer = setTimeout(function () {
-				var x, y;
-				thisP.timer = null;
-				thisP.explosionLevel = 0;
+			if (new Date() - bombStartTime > BOMB_DELAY) {
+				clearInterval(bombTimer);
+			}
+		}, 20);
+		this.timer = setTimeout(function() {
+			var x, y;
+			thisP.timer = null;
+			thisP.redraw();
+			thisP.damage();
+			thisP.dig();
+			thisP.timer = setTimeout(function() {
+				thisP.redraw();
 				thisP.explosion = false;
 				thisP.shooting = false;
-				thisP.redraw();
-				thisP.damage();
-				thisP.dig();
 				if (thisP.shotOption.type === "doubleShot") {
 					thisP.tanks.spentDoubleShot();
 					thisP.shotOption.type = "shot";
@@ -205,24 +216,24 @@ simpleTank.Shot.prototype = {
 						thisP.callback = null;
 					}
 				}
-			}, 400);
-		}, 100);
+			}, BOMB_DELAY - 200);
+		}, 200);
 	},
-	damage: function () {
+	damage: function() {
 		var x, y;
 		x = Math.round(this.x);
 		y = Math.round(this.y);
 		this.tanks.damage(x, y, this.damageRage, this.damageValue);
 	},
-	dig: function () {
+	dig: function() {
 		var x, y;
 		x = Math.round(this.x);
 		y = Math.round(this.y);
 		this.map.dig(x, y, this.damageRage);
 		this.tanks.land();
 	},
-	redraw: function () {
-		var ctx, mapWidth, mapHeight, lingrad, explosionRange;
+	redraw: function() {
+		var ctx, mapWidth, mapHeight, lingrad, explosionRange, i, particle;
 		ctx = this.ctx;
 		mapWidth = this.map.width;
 		mapHeight = this.map.height;
@@ -231,15 +242,10 @@ simpleTank.Shot.prototype = {
 		ctx.clearRect(0, 0, mapWidth, mapHeight);
 		if (this.shooting) {
 			if (this.explosion) {
-				if (this.explosionLevel === 1) {
-					explosionRange = Math.round(this.damageRage * 1.5);
-					ctx.beginPath();
-					lingrad = ctx.createRadialGradient(this.x, this.y, 0, this.x, this.y, explosionRange);
-					lingrad.addColorStop(0, this.color);
-					lingrad.addColorStop(1, "rgba(0, 0, 0, 0)");
-					ctx.fillStyle = lingrad;
-					ctx.arc(Math.round(this.x), Math.round(this.y), explosionRange, 0, Math.PI * 2, false);
-					ctx.fill();
+				for (i = 0; i < this.particles.length; i += 1) {
+					particle = this.particles[i];
+					particle.update(20);
+					particle.draw(ctx);
 				}
 			} else {
 				ctx.beginPath();
@@ -253,7 +259,92 @@ simpleTank.Shot.prototype = {
 		
 		ctx.restore();
 	},
-	getDataValue: function (x) {
+	getDataValue: function(x) {
 		return this.mapData[x];
 	}
 };
+
+
+function randomFloat(min, max) {
+	return min + Math.random() * (max - min);
+}
+
+function Particle() {
+	this.scale = 1.0;
+	this.x = 0;
+	this.y = 0;
+	this.radius = 20;
+	this.color = "#000";
+	this.velocityX = 0;
+	this.velocityY = 0;
+	this.scaleSpeed = 0.5;
+	
+	this.update = function(ms) {
+		// shrinking
+		this.scale -= this.scaleSpeed * ms / 1000.0;
+		
+		if (this.scale <= 0) {
+			this.scale = 0;
+		}
+		// moving away from explosion center
+		this.x += this.velocityX * ms / 1000.0;
+		this.y += this.velocityY * ms / 1000.0;
+	};
+	
+	this.draw = function(context2D) {
+		// translating the 2D context to the particle coordinates
+		context2D.save();
+		context2D.translate(this.x, this.y);
+		context2D.scale(this.scale, this.scale);
+		
+		// drawing a filled circle in the particle's local space
+		context2D.beginPath();
+		context2D.arc(0, 0, this.radius, 0, Math.PI * 2, true);
+		context2D.closePath();
+		
+		context2D.fillStyle = this.color;
+		context2D.fill();
+		
+		context2D.restore();
+	};
+}
+
+/*
+ * Advanced Explosion effect
+ * Each particle has a different size, move speed and scale speed.
+ *
+ * Parameters:
+ * 	x, y - explosion center
+ * 	color - particles' color
+ */
+function createExplosion(particles, x, y, color) {
+	var minSize, maxSize, count, minSpeed, maxSpeed, minScaleSpeed, maxScaleSpeed, angle, particle, speed;
+	minSize = 10;
+	maxSize = 30;
+	count = 10;
+	minSpeed = 60.0;
+	maxSpeed = 200.0;
+	minScaleSpeed = 1.0;
+	maxScaleSpeed = 4.0;
+	
+	for (angle = 0; angle < 360; angle += Math.round(360 / count)) {
+		particle = new Particle();
+		
+		particle.x = x;
+		particle.y = y;
+		
+		particle.radius = randomFloat(minSize, maxSize);
+		
+		particle.color = color;
+		
+		particle.scaleSpeed = randomFloat(minScaleSpeed, maxScaleSpeed);
+		
+		speed = randomFloat(minSpeed, maxSpeed);
+		
+		particle.velocityX = speed * Math.cos(angle * Math.PI / 180.0);
+		particle.velocityY = speed * Math.sin(angle * Math.PI / 180.0);
+		
+		particles.push(particle);
+	}
+}
+

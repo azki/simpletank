@@ -2,13 +2,14 @@
  * Tanks
  * @author azki (azki@azki.org)
  */
+/*jslint regexp:false,nomen:false,white:false*/
 /*global Math, simpleTank*/
 "use strict";
-simpleTank.Tank = function () {
+simpleTank.Tank = function() {
 	this.init.apply(this, arguments);
 };
 simpleTank.Tank.prototype = {
-	init: function (ctx, properties) {
+	init: function(ctx, properties) {
 		this.ctx = ctx;
 		this.x = properties.x || 0;
 		this.y = properties.y || 0;
@@ -27,10 +28,10 @@ simpleTank.Tank.prototype = {
 		this.gunLength = 0;
 		this.doubleShot = 0;
 	},
-	initTank: function () {
+	initTank: function() {
 		this["initTankType" + this.type]();
 	},
-	initTankType1: function () {
+	initTankType1: function() {
 		this.hp = 100;
 		this.power = 0.5;
 		this.tankDepth = 1;
@@ -40,7 +41,7 @@ simpleTank.Tank.prototype = {
 		this.damageValue = 50;
 		this.doubleShot = 2;
 	},
-	initTankType2: function () {
+	initTankType2: function() {
 		this.hp = 100;
 		this.power = 0.5;
 		this.tankDepth = 1;
@@ -50,7 +51,7 @@ simpleTank.Tank.prototype = {
 		this.damageValue = 50;
 		this.doubleShot = 2;
 	},
-	redraw: function () {
+	redraw: function() {
 		var ctx;
 		ctx = this.ctx;
 		ctx.save();
@@ -61,7 +62,7 @@ simpleTank.Tank.prototype = {
 		
 		ctx.restore();
 	},
-	redrawType1: function (ctx) {
+	redrawType1: function(ctx) {
 		var gunX, gunY;
 		ctx.save();
 		
@@ -79,7 +80,7 @@ simpleTank.Tank.prototype = {
 		
 		ctx.restore();
 	},
-	redrawType2: function (ctx) {
+	redrawType2: function(ctx) {
 		var gunX, gunY;
 		ctx.save();
 		
@@ -100,7 +101,7 @@ simpleTank.Tank.prototype = {
 		
 		ctx.restore();
 	},
-	getGunX: function () {
+	getGunX: function() {
 		var angle;
 		angle = -this.angle;
 		if (0 < angle) {
@@ -108,7 +109,7 @@ simpleTank.Tank.prototype = {
 		}
 		return Math.round(this.gunLength * Math.cos(angle * Math.PI / 180));
 	},
-	getGunY: function () {
+	getGunY: function() {
 		var angle;
 		angle = -this.angle;
 		if (0 < angle) {
@@ -116,7 +117,7 @@ simpleTank.Tank.prototype = {
 		}
 		return Math.round(this.gunLength * Math.sin(angle * Math.PI / 180)) - (this.tankDepth + this.tankSize);
 	},
-	getFar: function (x, y) {
+	getFar: function(x, y) {
 		var xx, yy;
 		xx = Math.pow(Math.abs(this.x - x), 2);
 		yy = Math.pow(Math.abs(this.y - y), 2);

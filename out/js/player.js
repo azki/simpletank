@@ -2,20 +2,21 @@
  * Player
  * @author azki (azki@azki.org)
  */
+/*jslint regexp:false,nomen:false,white:false*/
 /*global simpleTank*/
 "use strict";
-simpleTank.Player = function () {
+simpleTank.Player = function() {
 	this.init.apply(this, arguments);
 };
 simpleTank.Player.prototype = {
 	nameSpace: simpleTank,
-	init: function (userArray) {
+	init: function(userArray) {
 		this.data = userArray;
 		this.count = userArray.length;
 		this.aiArray = [];
 		this.aiInterface = null;
 	},
-	initAi: function (aiInterface, map, tanks) {
+	initAi: function(aiInterface, map, tanks) {
 		var data, i, len, playerType;
 		data = this.data;
 		len = this.count;
@@ -29,7 +30,7 @@ simpleTank.Player.prototype = {
 			}
 		}
 	},
-	stopAi: function () {
+	stopAi: function() {
 		var len, i, ai;
 		len = this.count;
 		for (i = 0; i < len; i += 1) {
@@ -39,22 +40,22 @@ simpleTank.Player.prototype = {
 			}
 		}
 	},
-	startAi: function (turn, tank) {
+	startAi: function(turn, tank) {
 		this.aiArray[turn].go(tank);
 	},
-	getType: function (index) {
+	getType: function(index) {
 		return this.data[index].type;
 	},
-	getColor: function (index) {
+	getColor: function(index) {
 		return this.data[index].color;
 	},
-	getName: function (index) {
+	getName: function(index) {
 		return this.data[index].name;
 	},
-	getTeam: function (index) {
+	getTeam: function(index) {
 		return this.data[index].team;
 	},
-	isAi: function (index) {
+	isAi: function(index) {
 		return this.data[index].type.substr(0, 2) === "Ai";
 	}
 };

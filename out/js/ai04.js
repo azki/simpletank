@@ -2,6 +2,7 @@
  * Ai04
  * @author azki (azki@azki.org)
  */
+/*jslint regexp:false,nomen:false,white:false*/
 /*global Math, clearTimeout, setTimeout, simpleTank*/
 "use strict";
 simpleTank.Ai04 = function () {

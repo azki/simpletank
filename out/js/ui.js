@@ -2,6 +2,7 @@
  * Ui
  * @author azki (azki@azki.org)
  */
+/*jslint regexp:false,nomen:false,white:false*/
 /*global $, Math, document, isFinite, parseInt, setInterval, simpleTank*/
 "use strict";
 simpleTank.Ui = function() {
