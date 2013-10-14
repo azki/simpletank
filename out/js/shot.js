@@ -183,11 +183,11 @@ simpleTank.Shot.prototype = {
 		
 		bombStartTime = new Date();
 		bombTimer = setInterval(function() {
-			// update and draw particles
-			thisP.redraw();
 			if (new Date() - bombStartTime > BOMB_DELAY) {
 				clearInterval(bombTimer);
+				thisP.particles = [];
 			}
+			thisP.redraw(); // update and draw particles
 		}, 20);
 		this.timer = setTimeout(function() {
 			var x, y;
