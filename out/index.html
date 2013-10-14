@@ -38,11 +38,27 @@ address {text-align:right;}
 /*global $,setTimeout,io4azki*/
 "use strict";
 $(function () {
+	var clientUniq = localStorage.getItem("clientUniq");
+	if (!clientUniq) {
+		clientUniq = Math.random().toString(36).substr(2);
+		localStorage.setItem("clientUniq", clientUniq);
+	}
+	
+	var nickName = localStorage.getItem("nickName");
+	while (!nickName) {
+		nickName = prompt("닉네임을 입력하세요");
+		localStorage.setItem("nickName", nickName);
+	}
+	
 	var socket;
 	socket = io4azki.connect("/tank");
 	socket.on("connect", function() {
 		var roomNum = prompt("방 이름을 입력하세요");
-		socket.emit("join", roomNum);
+		socket.emit("join", {
+			clientUniq: clientUniq,
+			nickName: nickName,
+			roomNum: roomNum
+		});
 		//TODO send power , angle
 	});
 	socket.on("disconnect", function() {
