@@ -39,6 +39,10 @@ function getRoomNumFromMonId(monId) {
 	return roomNum;
 }
 
+function sendToMon(room, name, value) {
+	sockMap[room.monId].socket.emit(name, value);
+}
+
 io.of('/tank').on('connection', function(socket) {
 	var sockId = socket.id;
 	sockMap[sockId] = {
@@ -47,12 +51,16 @@ io.of('/tank').on('connection', function(socket) {
 	};
 	socket.on('disconnect', function() {
 		delete sockMap[sockId];
+		// mon 일 경우.
 		var roomNum = getRoomNumFromMonId(sockId);
 		if (roomNum > -1) {
 			roomArr.splice(roomNum, 1);
 			socket.leave('room' + roomNum);
 			socket.broadcast.to('room' + roomNum).emit('error', '방이 닫혔습니다. (게임 종료)');
 		}
+		// user 일 경우.
+		// TODO game 중이면
+		
 	});
 	
 	//mon - 방 만들기
@@ -60,7 +68,7 @@ io.of('/tank').on('connection', function(socket) {
 		var roomNum = roomArr.length;
 		roomArr[roomNum] = {
 			monId: sockId,
-			joinable: true,
+			gaming: false,
 			user: [],
 			userLimit: roomLimit
 		};
@@ -88,8 +96,8 @@ io.of('/tank').on('connection', function(socket) {
 			socket.emit('error', '존재하지 않는 방입니다.');
 			return;
 		}
-		if (room.joinable === false) {
-			socket.emit('error', '현재 입장 가능한 상태가 아닙니다. 게임이 끝난 후 입장 가능.');
+		if (room.gaming === true) {
+			socket.emit('error', '현재 게임이 진행중입니다. 게임이 끝난 후 입장 가능합니다.');
 			return;
 		}
 		if (room.user.length >= room.userLimit) {
@@ -99,7 +107,7 @@ io.of('/tank').on('connection', function(socket) {
 		userInfo.sockId = sockId;
 		room.user.push(userInfo);
 		socket.join('room' + roomNum);
-		sockMap[room.monId].socket.emit('updateRoom', room);
+		sendToMon(room, 'updateRoom', room);
 		//socket.broadcast.to('room' + roomNum).emit('userUpdate', room.user);
 		socket.emit('okRoom', roomNum);
 	});
