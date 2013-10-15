@@ -17,6 +17,7 @@
 				top:20px;
 				width:300px;
 				background: #2F2933;
+				opacity: 0.8;
 				padding: 20px 10px;
 				text-align: center;
 				border-radius: 10px;
@@ -168,20 +169,23 @@
 					showRoomMessage();
 					//TODO 애들끼리 연습게임 시작함..
 				});
-				socket.on("join", function(tankIndex, power) {
-					tankUi.setPower(tankIndex, power);
+				socket.on("set_angle", function(data) {
+					console.log(data);
+					tankUi.setAngle(data.tankIndex, data.value);
 				});
-				socket.on("setPower", function(tankIndex, power) {
-					tankUi.setPower(tankIndex, power);
+				socket.on("set_power", function(data) {
+					console.log(data);
+					tankUi.setPower(data.tankIndex, data.value);
 				});
-				socket.on("setAngle", function(tankIndex, angle) {
-					tankUi.setAngle(tankIndex, angle);
-				});
-				socket.on("fire", function(type) {
-					tankUi.fire(type, function() {
-						//TODO nextTurn
-						console.log('TODO nextTurn');
-					});
+				socket.on("set_fire", function(data) {
+					console.log(data);
+					if (tankUi.getTurnIndex() === data.tankIndex) {
+						//TODO check data.tankIndex
+						tankUi.fire(data.value, function(){
+							//TODO nextTurn
+							console.log('TODO nextTurn');
+						});
+					}
 				});
 				socket.on("updateRoom", function(users) {
 					console.log(users);

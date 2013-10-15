@@ -2,42 +2,47 @@
 <html>
 	<head>
 		<meta charset=utf-8>
-		<meta name="viewport" content="user-scalable=no, initial-scale=1.0, width=320" />
+		<meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1">
 		<meta name="apple-mobile-web-app-capable" content="yes">
 		<meta name="apple-mobile-web-app-status-bar-style" content="black">
 		<title>Simple Tank : tank.azki.org</title>
+		<link rel="stylesheet" href="http://code.jquery.com/mobile/1.1.0-rc.1/jquery.mobile-1.1.0-rc.1.min.css" />
 		<style type="text/css">
 html,body {margin:0}
 body { font-family:Georgia; }
 .panel {margin:5px; border:1px dotted #999; text-align:center;}
 address {text-align:right;}
 </style>
+		<script src="http://code.jquery.com/jquery-1.7.1.min.js"></script>
+		<script src="http://code.jquery.com/mobile/1.1.0-rc.1/jquery.mobile-1.1.0-rc.1.min.js"></script>
+		<script src="./js/io.min.js"></script>
 	</head>
 	<body>
-		<div id="status" class="panel">
-			상태메시지
-		</div>
-		<div id="hp" class="panel">
-			hp
-		</div>
-		<div id="angle" class="panel">
-			angle
-		</div>
-		<div id="power" class="panel">
-			power
-		</div>
-		<div id="btns" class="panel">
-			<button id="move" type="button">move</button>
-			<button id="doubleShot" type="button">double shot</button>
-			<button id="shot" type="button">normal shot</button>
-		</div>
+		<form onsubmit="return false;">
+			<div id="status" class="ui-body ui-body-c">
+				상태메시지
+			</div>
+			<div id="hp" class="ui-body ui-body-c">
+				hp
+			</div>
+			<div id="angle" class="ui-body ui-body-c">
+				angle
+				<input type="range" name="angleSlider" id="angleSlider" value="45" min="1" max="179"  data-highlight="true" />
+			</div>
+			<div id="power" class="ui-body ui-body-c">
+				power
+				<input type="range" name="powerSlider" id="powerSlider" value="50" min="0" max="99"  data-highlight="true" />
+			</div>
+			<div id="btns" class="ui-body ui-body-c">
+				<button id="move" type="button" data-inline="true">move</button>
+				<button id="doubleShot" type="button" data-inline="true">double shot</button>
+				<button id="shot" type="button" data-inline="true">normal shot</button>
+			</div>
+		</form>
 		<address>Simple Tank 0.3.1 by azki( @ azki.org).</address>
-		<script type="text/javascript" src="./js/jquery-1.4.1.min.js"></script>
-		<script type="text/javascript" src="./js/io.min.js"></script>
-		<script type="text/javascript">
-/*global $,setTimeout,io4azki*/
+		<script>
 "use strict";
-$(function () {
+window.onload = function(){
 	var clientUniq = localStorage.getItem("clientUniq");
 	if (!clientUniq) {
 		clientUniq = Math.random().toString(36).substr(2);
@@ -46,28 +51,75 @@ $(function () {
 	
 	var nickName = localStorage.getItem("nickName");
 	while (!nickName) {
-		nickName = prompt("닉네임을 입력하세요");
+		nickName = prompt("닉네임을 입력하세요", "");
 		localStorage.setItem("nickName", nickName);
 	}
+	var roomNum = localStorage.getItem("roomNum");
+	roomNum = prompt("방 번호을 입력하세요", roomNum);
+	localStorage.setItem("roomNum", roomNum);
 	
-	var socket;
-	socket = io4azki.connect("/tank");
-	socket.on("connect", function() {
-		var roomNum = prompt("방 이름을 입력하세요");
+	var isRoom = false;
+	var isMyTurn = false; // TODO.
+	var myTankIndex = -1;
+	var socket = io4azki.connect("/tank");
+	socket.on("connect", function(){
+		$("#status").html("접속 중입니다.");
 		socket.emit("join", {
 			clientUniq: clientUniq,
 			nickName: nickName,
 			roomNum: roomNum
 		});
-		//TODO send power , angle
 	});
-	socket.on("disconnect", function() {
-		console.log("disconnect");
+	socket.on("disconnect", function(){
+		$("#status").html("접속이 끊켰어요..");
+		isRoom = false;
 	});
-	socket.on("okRoom", function (roomNum) {
-		$("#status").html(roomNum + "방에 입장했어요!");
+	socket.on("okRoom", function(info){
+		$("#status").html(info.roomNum + "번 방에 입장했어요! " + info.tankIndex + "번 유저예요!");
+		myTankIndex = info.tankIndex;
+		isRoom = true;
 	});
-});
+	socket.on("error", function(msg){
+		$("#status").html("Error : " + msg);
+		isRoom = false;
+	});
+	
+	window.dd = socket;
+	 
+	function sendAngle() {
+		if (isRoom) {
+			socket.emit("tank", {
+				name: "angle",
+				value: Math.abs(180 - $("#angleSlider").val())
+			});
+		}
+	}
+	
+	function sendPower() {
+		if (isRoom) {
+			socket.emit("tank", {
+				name: "power",
+				value: +$("#powerSlider").val()
+			});
+		}
+	}
+	
+	function sendFire(fireType) {
+		if (isRoom) {
+			socket.emit("tank", {
+				name: "fire",
+				value: fireType
+			});
+		}
+	}
+	
+	$("#angleSlider").change(sendAngle);
+	$("#powerSlider").change(sendPower);
+	$("#move,#doubleShot,#shot").click(function () {
+		sendFire($(this).attr("id"));
+	});
+	
+};
 		</script>
 	</body>
 </html>

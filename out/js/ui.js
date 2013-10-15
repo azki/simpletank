@@ -84,6 +84,9 @@ simpleTank.Ui.prototype = {
 		}
 		this.drawPinWheel();
 	},
+	getTurnIndex: function () {
+		return this.tanks.turn;
+	},
 	drawPinWheel: function () {
 		var map = this.map;
 		if ($("#pinWheel").data("wind") !== map.wind) {
@@ -195,7 +198,7 @@ simpleTank.Ui.prototype = {
 			}
 		}
 		var tank = this.tanks.getTank(tankIndex);
-		if (tank !== null) {
+		if (tank) {
 			power /= 100;
 			if (tank.power !== power) {
 				tank.power = power;
@@ -217,7 +220,7 @@ simpleTank.Ui.prototype = {
 			}
 		}
 		var tank = this.tanks.getTank(tankIndex);
-		if (tank !== null) {
+		if (tank) {
 			if (tank.angle !== angle) {
 				tank.angle = angle;
 				this.tanks.redraw();

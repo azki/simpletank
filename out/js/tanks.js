@@ -200,7 +200,7 @@ simpleTank.Tanks.prototype = {
 		}
 	},
 	drawAssist: function(ctx) {
-		var tank, tankGunX, tankGunY, tankAngle, assistX, assistY, assistArcArr, i, assistX2, assistY2, assistX3, assistY3, gradient;
+		var tank, tankGunX, tankGunY, tankAngle, assistX, assistY, assistArcArr, i, assistX2, assistY2, assistX3, assistY3, gradient, powerEffect;
 		if (0 <= this.turn) {
 			tank = this.tankArr[this.turn];
 			tankGunX = tank.x + tank.getGunX();
@@ -220,11 +220,12 @@ simpleTank.Tanks.prototype = {
 			gradient.addColorStop(1, 'rgba(0, 0, 0, 0)');
 			ctx.strokeStyle = gradient;
 			ctx.beginPath();
-			for (i = 1; i < 20; i += 2) {
-				assistX2 = -Math.round(i * 10 * Math.cos(tankAngle * Math.PI / 180)) + tankGunX;
-				assistY2 = Math.round(i * 10 * Math.sin(tankAngle * Math.PI / 180)) + tankGunY;
-				assistX3 = -Math.round((i + 1) * 10 * Math.cos(tankAngle * Math.PI / 180)) + tankGunX;
-				assistY3 = Math.round((i + 1) * 10 * Math.sin(tankAngle * Math.PI / 180)) + tankGunY;
+			powerEffect = Math.ceil(tank.power * 25) % 10;
+			for (i = 0; i < 20; i += 2) {
+				assistX2 = -Math.round((i * 10 + powerEffect) * Math.cos(tankAngle * Math.PI / 180)) + tankGunX;
+				assistY2 = Math.round((i * 10 + powerEffect) * Math.sin(tankAngle * Math.PI / 180)) + tankGunY;
+				assistX3 = -Math.round(((i + 1) * 10 + powerEffect) * Math.cos(tankAngle * Math.PI / 180)) + tankGunX;
+				assistY3 = Math.round(((i + 1) * 10 + powerEffect) * Math.sin(tankAngle * Math.PI / 180)) + tankGunY;
 				ctx.moveTo(assistX2, assistY2);
 				ctx.lineTo(assistX3, assistY3);
 			}
@@ -307,7 +308,7 @@ simpleTank.Tanks.prototype = {
 		ctx.restore();
 	},
 	getTank: function(index) {
-		return this.tankArr[index];
+		return this.tankArr[index] || null;
 	},
 	getTurnTank: function() {
 		return 0 <= this.turn ? this.tankArr[this.turn] : null;
