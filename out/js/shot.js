@@ -160,6 +160,7 @@ simpleTank.Shot.prototype = {
 		tanks = this.tanks;
 		tank = tanks.getTurnTank();
 		tank.x = x;
+		tank.y = this.map.height;
 		tanks.land();
 		this.shooting = false;
 		this.redraw();

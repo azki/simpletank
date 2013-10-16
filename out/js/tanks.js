@@ -53,24 +53,31 @@ simpleTank.Tanks.prototype = {
 		}
 	},
 	land: function() {
-		var i, len, tanks, tank, mapY, needRedraw;
-		tanks = this.tankArr;
+		var thisP, len, tanks, map, landFn;
+		thisP = this;
 		len = this.count;
-		needRedraw = false;
-		for (i = 0; i < len; i += 1) {
-			tank = tanks[i];
-			mapY = this.map.getDataValue(tank.x);
-			if (tank.y !== mapY) {
-				tank.y = mapY;
-				if (mapY <= 0) {
-					tank.hp = 0;
+		tanks = this.tankArr;
+		map = this.map;
+		landFn = function () {
+			var needRedraw, tank, mapY, i;
+			needRedraw = false;
+			for (i = 0; i < len; i += 1) {
+				tank = tanks[i];
+				mapY = map.getDataValue(tank.x);
+				if (tank.y < mapY) {
+					tank.y += 1;
+					needRedraw = true;
+				} else if (tank.y > mapY) {
+					tank.y = mapY;
+					needRedraw = true;
 				}
-				needRedraw = true;
 			}
-		}
-		if (needRedraw) {
-			this.redraw();
-		}
+			if (needRedraw) {
+				thisP.redraw();
+				setTimeout(landFn, 20);
+			}
+		};
+		landFn();
 	},
 	passTurn: function() {
 		var tanks, oriTurn, turn;

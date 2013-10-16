@@ -56,150 +56,162 @@
 		<script type="text/javascript" src="./js/ui.js">
 		</script>
 		<script type="text/javascript">
-			/*global $,simpleTank,io4azki*/
-			/*global ROOM_LIMIT*/
-			"use strict";
-			var ROOM_LIMIT = 4;
-			$(function() {
-				var mapWidth, mapHeight, i, cvmap, cvtank, cvshot, mapCtx, tankCtx, shotCtx, map, tanks, shot;
-				mapWidth = innerWidth;
-				mapHeight = innerHeight;
-				$("#canvasPanel").width(mapWidth).height(mapHeight);
-				$("#canvasPanel>canvas").attr("width", mapWidth).attr("height", mapHeight);
-				cvmap = $("#cvmap").get(0);
-				cvtank = $("#cvtank").get(0);
-				cvshot = $("#cvshot").get(0);
-				if (cvmap.getContext) {
-					mapCtx = cvmap.getContext("2d");
-					tankCtx = cvtank.getContext("2d");
-					shotCtx = cvshot.getContext("2d");
-					map = new simpleTank.Map(mapCtx, {
-						width: mapWidth,
-						height: mapHeight
-					});
-					tanks = new simpleTank.Tanks(tankCtx, {
-						map: map
-					});
-					shot = new simpleTank.Shot(shotCtx, {
-						map: map,
-						tanks: tanks
-					});
-					map.newMapData();
-					map.redraw();
-					
-					startFirstGame(map, tanks, shot);
-				} else {
-					$("#canvasPanel").html("<h1>Canvas를 지원하지 않는 브라우저입니다.</h1>");
-				}
-			});
-			
-			function startFirstGame(map, tanks, shot) {
-				var player, ui;
-				player = new simpleTank.Player([{
-					type: "user",
-					color: "#f00",
-					name: "유저1",
-					team: 1
-				}, {
-					type: "Ai04",
-					difficulty: 1,
-					color: "#00f",
-					name: "컴퓨터1",
-					team: 2
-				}, {
-					type: "Ai04",
-					difficulty: 3,
-					color: "#ff0",
-					name: "컴퓨터2",
-					team: 3
-				}, {
-					type: "Ai04",
-					difficulty: 9,
-					color: "#f0f",
-					name: "컴퓨터3",
-					team: 4
-				}]);
-				ui = new simpleTank.Ui(map, tanks, shot, player, function(result) {
-					if (result.type === "turnLost") {
-						setTimeout(function() {
-							map.newMapData();
-							map.redraw();
-							ui.newGame(player);
-							ui.nextPlayer();
-						}, 3000);
-					}
-				});
-				window.tankUi = ui;
-				ui.onNewTurn = function () {
-					console.log("onNewTurn", arguments);
-				};
+/*global $,simpleTank,io4azki*/
+/*global ROOM_LIMIT*/
+"use strict";
+var ROOM_LIMIT = 4;
+$(function() {
+	var mapWidth, mapHeight, i, cvmap, cvtank, cvshot, mapCtx, tankCtx, shotCtx, map, tanks, shot;
+	mapWidth = innerWidth;
+	mapHeight = innerHeight;
+	$("#canvasPanel").width(mapWidth).height(mapHeight);
+	$("#canvasPanel>canvas").attr("width", mapWidth).attr("height", mapHeight);
+	cvmap = $("#cvmap").get(0);
+	cvtank = $("#cvtank").get(0);
+	cvshot = $("#cvshot").get(0);
+	if (cvmap.getContext) {
+		mapCtx = cvmap.getContext("2d");
+		tankCtx = cvtank.getContext("2d");
+		shotCtx = cvshot.getContext("2d");
+		map = new simpleTank.Map(mapCtx, {
+			width: mapWidth,
+			height: mapHeight
+		});
+		tanks = new simpleTank.Tanks(tankCtx, {
+			map: map
+		});
+		shot = new simpleTank.Shot(shotCtx, {
+			map: map,
+			tanks: tanks
+		});
+		map.newMapData();
+		map.redraw();
+		
+		startFirstGame(map, tanks, shot);
+	} else {
+		$("#canvasPanel").html("<h1>Canvas를 지원하지 않는 브라우저입니다.</h1>");
+	}
+});
+
+function startFirstGame(map, tanks, shot) {
+	var player, ui;
+	player = new simpleTank.Player([{
+		type: "user",
+		color: "#f00",
+		name: "유저1",
+		team: 1
+	}, {
+		type: "Ai04",
+		difficulty: 1,
+		color: "#00f",
+		name: "컴퓨터1",
+		team: 2
+	}, {
+		type: "Ai04",
+		difficulty: 3,
+		color: "#ff0",
+		name: "컴퓨터2",
+		team: 3
+	}, {
+		type: "Ai04",
+		difficulty: 9,
+		color: "#f0f",
+		name: "컴퓨터3",
+		team: 4
+	}]);
+	ui = new simpleTank.Ui(map, tanks, shot, player, function(result) {
+		if (result.type === "turnLost") {
+			setTimeout(function() {
+				map.newMapData();
+				map.redraw();
+				ui.newGame(player);
 				ui.nextPlayer();
-				initSock();
-			}
-			var ROOM_NUM = 0;
-			function showRoomMessage() {
-				$("#message")
-				.html('<p>모바일에서<br/><b>http://azki.org:89/' + ROOM_NUM + '</b><br/>로 접속하세요.</p>')
-				.css("display", "inline-block")
-				.removeClass()
-				.addClass("animated bounceInDown");
-			}
-			function hideRoomMessage() {
-				$("#message").removeClass().addClass("animated bounceOutDown");
-			}
-			function initSock() {
-				var socket;
-				socket = io4azki.connect("/tank");
-				socket.on("connect", function() {
-					socket.emit("createRoom", ROOM_LIMIT);
-				});
-				socket.on("disconnect", function() {
-					hideRoomMessage();
-				});
-				socket.on("newRoom", function(roomNum) {
-					ROOM_NUM = roomNum;
-					showRoomMessage();
-					//TODO 애들끼리 연습게임 시작함..
-				});
-				socket.on("set_angle", function(data) {
-					console.log(data);
-					tankUi.setAngle(data.tankIndex, data.value);
-				});
-				socket.on("set_power", function(data) {
-					console.log(data);
-					tankUi.setPower(data.tankIndex, data.value);
-				});
-				socket.on("set_fire", function(data) {
-					console.log(data);
-					if (tankUi.getTurnIndex() === data.tankIndex) {
-						//TODO check data.tankIndex
-						tankUi.fire(data.value, function(){
-							//TODO nextTurn
-							console.log('TODO nextTurn');
-						});
-					}
-				});
-				socket.on("updateRoom", function(users) {
-					console.log(users);
-				});
-			}
+			}, 3000);
+		}
+	});
+	window.tankUi = ui;
+	ui.onNewTurn = function () {
+		console.log("onNewTurn", arguments);
+	};
+	ui.nextPlayer();
+	initSock();
+}
+var ROOM_NUM = 0;
+function showRoomMessage() {
+	$("#message")
+	.html('<p>모바일에서<br/><b>http://azki.org:89/' + ROOM_NUM + '</b><br/>로 접속하세요.</p>')
+	.css("display", "inline-block")
+	.removeClass()
+	.addClass("animated bounceInDown");
+}
+function hideRoomMessage() {
+	$("#message").removeClass().addClass("animated bounceOutDown");
+}
+function showUserTable() {
+	$("#userTable")
+	.css("display", "inline-table")
+	.removeClass()
+	.addClass("animated bounceInDown");
+}
+function hideUserTable() {
+	$("#userTable").removeClass().addClass("animated bounceOutDown");
+}
+function initSock() {
+	var socket;
+	socket = io4azki.connect("/tank");
+	socket.on("connect", function() {
+		socket.emit("createRoom", ROOM_LIMIT);
+	});
+	socket.on("disconnect", function() {
+		hideRoomMessage();
+		hideUserTable();
+	});
+	socket.on("newRoom", function(roomNum) {
+		ROOM_NUM = roomNum;
+		showRoomMessage();
+		showUserTable();
+		//TODO 애들끼리 연습게임 시작함..
+	});
+	socket.on("set_angle", function(data) {
+		console.log(data);
+		tankUi.setAngle(data.tankIndex, data.value);
+	});
+	socket.on("set_power", function(data) {
+		console.log(data);
+		tankUi.setPower(data.tankIndex, data.value);
+	});
+	socket.on("set_fire", function(data) {
+		console.log(data);
+		if (tankUi.getTurnIndex() === data.tankIndex) {
+			//TODO check data.tankIndex
+			tankUi.fire(data.value, function(){
+				//TODO nextTurn
+				console.log('TODO nextTurn');
+			});
+		}
+	});
+	socket.on("updateRoom", function(users) {
+		console.log(users);
+	});
+}
 		</script>
 	</head>
 	<body>
 		<div id="canvasPanel" style="position:absolute;">
-			<canvas id="cvmap" style="position:absolute;">
-			</canvas>
-			<canvas id="cvtank" style="position:absolute;">
-			</canvas>
-			<canvas id="cvshot" style="position:absolute;">
-			</canvas>
+			<canvas id="cvmap" style="position:absolute;"/></canvas>
+			<canvas id="cvtank" style="position:absolute;"></canvas>
+			<canvas id="cvshot" style="position:absolute;"></canvas>
 			<img id="pinWheel" src="img/pinwheel.png" style="position:absolute;top:10px;left:95px;"/>
 		</div>
 		<div style="position: absolute; width:100%; text-align:center;">
-			<div id="message" style="position:relative; display:none;">
-			</div>
+			<div id="message" style="position:relative; display:none;"></div>
+			<table id="userTable" style="position: relative; display:none; margin-top:50px; width:80%;" border="1"><tr>
+				<td id=""></td>
+				<td id=""></td>
+				<td id=""></td>
+				<td id=""></td>
+			</tr></table>
 		</div>
-		<div id="thisIsMyTurn" style="position:absolute; display:none;">
-		</div>
+		<div id="thisIsMyTurn" style="position:absolute; display:none;"></div>
 	</body>
 </html>
