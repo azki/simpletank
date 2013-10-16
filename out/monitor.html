@@ -15,10 +15,9 @@
 			
 			#message {
 				top:20px;
-				width:300px;
 				background: #2F2933;
 				opacity: 0.8;
-				padding: 20px 10px;
+				padding: 10px 20px;
 				text-align: center;
 				border-radius: 10px;
 				font-weight: bold;
@@ -61,12 +60,6 @@
 			/*global ROOM_LIMIT*/
 			"use strict";
 			var ROOM_LIMIT = 4;
-			$(function() {
-				var matched = location.href.match(/limit=(\d+)/);
-				if (matched) {
-					ROOM_LIMIT = +matched[1];
-				}
-			});
 			$(function() {
 				var mapWidth, mapHeight, i, cvmap, cvtank, cvshot, mapCtx, tankCtx, shotCtx, map, tanks, shot;
 				mapWidth = innerWidth;
@@ -146,9 +139,8 @@
 			var ROOM_NUM = 0;
 			function showRoomMessage() {
 				$("#message")
-				.css("left", ((innerWidth - 300) / 2) + "px")
-				.html('<p>모바일에서<br/><b>http://azki.org:89</b><br/>로 접속하세요.</p>방 번호 : <b>' + ROOM_NUM + '</b>')
-				.show()
+				.html('<p>모바일에서<br/><b>http://azki.org:89/' + ROOM_NUM + '</b><br/>로 접속하세요.</p>')
+				.css("display", "inline-block")
 				.removeClass()
 				.addClass("animated bounceInDown");
 			}
@@ -203,7 +195,9 @@
 			</canvas>
 			<img id="pinWheel" src="img/pinwheel.png" style="position:absolute;top:10px;left:95px;"/>
 		</div>
-		<div id="message" style="position:absolute; display:none;">
+		<div style="position: absolute; width:100%; text-align:center;">
+			<div id="message" style="position:relative; display:none;">
+			</div>
 		</div>
 		<div id="thisIsMyTurn" style="position:absolute; display:none;">
 		</div>

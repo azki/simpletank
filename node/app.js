@@ -12,15 +12,59 @@ var server = http.createServer(app);
 var io = require('socket.io').listen(server, {
 	log: true
 });
-app.use(express.static(OUT_DIR));
+['css', 'img', 'js'].forEach(function (dirName) {
+	app.use('/' + dirName, express.static(OUT_DIR + '/' + dirName));
+});
 // '/' 는 모바일 접속 용.
 // '/monitor' 는 방 만들기 용.
-var redirectMonitor = function (req, res) {
-	var param = req.query.limit ? '?limit=' + req.query.limit : '';
-	res.redirect('/monitor.html' + param);
+var sendMonitorHtml = function (req, res) {
+	res.header('Content-Type', 'text/html;charset=UTF-8');
+	fs.readFile(OUT_DIR + '/monitor.html', function(err, data) {
+		if (err) {
+			console.log('Error loading monitor.html', err);
+			return res.send(500, 'Error loading monitor.html');
+		}
+		res.writeHead(200);
+		res.end(data);
+	});
 };
-app.get('/mon', redirectMonitor);
-app.get('/monitor', redirectMonitor);
+var sendRemoteHtml = function (req, res) {
+	res.header('Content-Type', 'text/html;charset=UTF-8');
+	fs.readFile(OUT_DIR + '/remote.html', function(err, data) {
+		if (err) {
+			console.log('Error loading remote.html', err);
+			return res.send(500, 'Error loading remote.html');
+		}
+		res.writeHead(200);
+		res.end(data);
+	});
+};
+app.get('/mon', sendMonitorHtml);
+app.get('/monitor', sendMonitorHtml);
+app.get('/:roomNum', function (req, res) {
+	var roomNum = req.params.roomNum;
+	if (roomNum && +roomNum >= 0) {
+		sendRemoteHtml(req, res);
+	} else {
+		res.send(404, '/' + roomNum + ' is Not Found.');
+	}
+});
+app.get('/', function (req, res) {
+	res.header('Content-Type', 'text/html;charset=UTF-8');
+	var resHtml = '<h1>현재 생성된 방들</h1>';
+	roomArr.forEach(function (room, index) {
+		if (room) {
+			resHtml += '<p><a href="/' + index + '">' + index + '번 방</a> ';
+			if (room.gaming) {
+				resHtml += '<i style="color:red">게임중</i>';
+			} else {
+				resHtml += '<i style="color:green">대기중</i>';
+			}
+			resHtml += ' (' + room.users.length + '/' + room.userLimit + ')</p>';
+		}
+	});
+	res.end(resHtml);
+});
 server.listen(89);
 
 //monitor
@@ -53,12 +97,14 @@ function getRoomAndIndexByUserSockId(userSockId) {
 		}
 	};
 	for (i = 0; i < len; i += 1) {
+		if (roomArr[i]) {
 		roomArr[i].users.forEach(checkFn);
-		if (myIndex > -1) {
-			return {
-				room: roomArr[i],
-				index: myIndex
-			};
+			if (myIndex > -1) {
+				return {
+					room: roomArr[i],
+					index: myIndex
+				};
+			}
 		}
 	}
 	return null;
@@ -74,12 +120,14 @@ function getRoomAndIndexByUserUniq(userUniq) {
 		}
 	};
 	for (i = 0; i < len; i += 1) {
-		roomArr[i].users.forEach(checkFn);
-		if (myIndex > -1) {
-			return {
-				room: roomArr[i],
-				index: myIndex
-			};
+		if (roomArr[i]) {
+			roomArr[i].users.forEach(checkFn);
+			if (myIndex > -1) {
+				return {
+					room: roomArr[i],
+					index: myIndex
+				};
+			}
 		}
 	}
 	return null;
@@ -96,12 +144,14 @@ io.of('/tank').on('connection', function(socket) {
 		// mon 일 경우.
 		var roomNum = getRoomNumByMonId(sockId);
 		if (roomNum > -1) {
-			roomArr.splice(roomNum, 1);
+			roomArr[roomNum] = null;
 			socket.leave('room' + roomNum);
 			socket.broadcast.to('room' + roomNum).emit('error', '방이 닫혔습니다. (게임 종료)');
 		}
 		// user 일 경우.
 		// TODO game 중이면 mon에 표시해줘야하나? 턴 10초 자동 넘기기?
+		// TODO: gaming 이 아닐 경우 user 에서 삭제.
+		// TODO : gaming 이 true 이면 나뒀다가 game 종료시 삭제..
 	});
 	
 	//mon - 방 만들기
@@ -167,8 +217,7 @@ io.of('/tank').on('connection', function(socket) {
 		socket.join('room' + roomNum);
 		sendToMon(room, 'updateRoom', room);
 		socket.emit('okRoom', {
-			roomNum: roomNum,
-			tankIndex: tankIndex
+			roomNum: roomNum
 		});
 	});
 	//remote - tank (angle, power, fire)

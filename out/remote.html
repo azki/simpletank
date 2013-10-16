@@ -10,8 +10,7 @@
 		<style type="text/css">
 html,body {margin:0}
 body { font-family:Georgia; }
-.panel {margin:5px; border:1px dotted #999; text-align:center;}
-address {text-align:right;}
+#btns { padding:5px; text-align:center;}
 </style>
 		<script src="http://code.jquery.com/jquery-1.7.1.min.js"></script>
 		<script src="http://code.jquery.com/mobile/1.1.0-rc.1/jquery.mobile-1.1.0-rc.1.min.js"></script>
@@ -39,9 +38,9 @@ address {text-align:right;}
 				<button id="shot" type="button" data-inline="true">normal shot</button>
 			</div>
 		</form>
-		<address>Simple Tank 0.3.1 by azki( @ azki.org).</address>
 		<script>
 "use strict";
+var ROOM_NUM = -1;
 window.onload = function(){
 	var clientUniq = localStorage.getItem("clientUniq");
 	if (!clientUniq) {
@@ -54,20 +53,23 @@ window.onload = function(){
 		nickName = prompt("닉네임을 입력하세요", "");
 		localStorage.setItem("nickName", nickName);
 	}
-	var roomNum = localStorage.getItem("roomNum");
-	roomNum = prompt("방 번호을 입력하세요", roomNum);
-	localStorage.setItem("roomNum", roomNum);
+	
+	(function() {
+		var matched = location.href.match(/^\S+\/(\d+)$/);
+		if (matched) {
+			ROOM_NUM = +matched[1];
+		}
+	}());
 	
 	var isRoom = false;
 	var isMyTurn = false; // TODO.
-	var myTankIndex = -1;
 	var socket = io4azki.connect("/tank");
 	socket.on("connect", function(){
 		$("#status").html("접속 중입니다.");
 		socket.emit("join", {
 			clientUniq: clientUniq,
 			nickName: nickName,
-			roomNum: roomNum
+			roomNum: ROOM_NUM
 		});
 	});
 	socket.on("disconnect", function(){
@@ -75,8 +77,7 @@ window.onload = function(){
 		isRoom = false;
 	});
 	socket.on("okRoom", function(info){
-		$("#status").html(info.roomNum + "번 방에 입장했어요! " + info.tankIndex + "번 유저예요!");
-		myTankIndex = info.tankIndex;
+		$("#status").html(info.roomNum + "번 방에 입장했어요!");
 		isRoom = true;
 	});
 	socket.on("error", function(msg){
