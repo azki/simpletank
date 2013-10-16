@@ -14,7 +14,7 @@
 			}
 			
 			#message {
-				top:20px;
+				top: 20px;
 				background: #2F2933;
 				opacity: 0.8;
 				padding: 10px 20px;
@@ -205,11 +205,21 @@ function initSock() {
 		</div>
 		<div style="position: absolute; width:100%; text-align:center;">
 			<div id="message" style="position:relative; display:none;"></div>
-			<table id="userTable" style="position: relative; display:none; margin-top:50px; width:80%;" border="1"><tr>
-				<td id=""></td>
-				<td id=""></td>
-				<td id=""></td>
-				<td id=""></td>
+			<table id="userTable" style="position: relative; display:none; margin-top:50px; width:80%;" border="1">
+			<colgroup><col width="25%"/><col width="25%"/><col width="25%"/><col width="25%"/></colgroup>
+			<tr>
+				<td id="user0" style="background:rgba(0,0,0,0.75); color:#fff;">
+					<h1 style="color:#f00">빨간탱크</h1>
+				</td>
+				<td id="user1" style="background:rgba(0,0,0,0.75); color:#fff;">
+					<h1 style="color:#00f">파란탱크</h1>
+				</td>
+				<td id="user2" style="background:rgba(0,0,0,0.75); color:#fff;">
+					<h1 style="color:#ff0">노란탱크</h1>
+				</td>
+				<td id="user3" style="background:rgba(0,0,0,0.75); color:#fff;">
+					<h1 style="color:#f0f">보라탱크</h1>
+				</td>
 			</tr></table>
 		</div>
 		<div id="thisIsMyTurn" style="position:absolute; display:none;"></div>
