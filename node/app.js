@@ -12,11 +12,15 @@ var server = http.createServer(app);
 var io = require('socket.io').listen(server, {
 	log: true
 });
+
+var sockMap = {};
+// {sockId:{sockId,socket},}
+var roomArr = [];
+// {sockId:{sockId,socket},}
+
 ['css', 'img', 'js'].forEach(function (dirName) {
 	app.use('/' + dirName, express.static(OUT_DIR + '/' + dirName));
 });
-// '/' 는 모바일 접속 용.
-// '/monitor' 는 방 만들기 용.
 var sendMonitorHtml = function (req, res) {
 	res.header('Content-Type', 'text/html;charset=UTF-8');
 	fs.readFile(OUT_DIR + '/monitor.html', function(err, data) {
@@ -67,11 +71,6 @@ app.get('/', function (req, res) {
 });
 server.listen(89);
 
-//monitor
-//remotor
-
-var sockMap = {};
-var roomArr = [];
 
 function getRoomNumByMonId(monId) {
 	var roomNum = -1;
@@ -98,7 +97,7 @@ function getRoomAndIndexByUserSockId(userSockId) {
 	};
 	for (i = 0; i < len; i += 1) {
 		if (roomArr[i]) {
-		roomArr[i].users.forEach(checkFn);
+			roomArr[i].users.forEach(checkFn);
 			if (myIndex > -1) {
 				return {
 					room: roomArr[i],
@@ -141,20 +140,29 @@ io.of('/tank').on('connection', function(socket) {
 	};
 	socket.on('disconnect', function() {
 		delete sockMap[sockId];
+		
+		var roomNum, roomAndIndex, room;
 		// mon 일 경우.
-		var roomNum = getRoomNumByMonId(sockId);
+		roomNum = getRoomNumByMonId(sockId);
 		if (roomNum > -1) {
 			roomArr[roomNum] = null;
-			socket.leave('room' + roomNum);
 			socket.broadcast.to('room' + roomNum).emit('error', '방이 닫혔습니다. (게임 종료)');
 		}
+		
 		// user 일 경우.
-		// TODO game 중이면 mon에 표시해줘야하나? 턴 10초 자동 넘기기?
-		// TODO: gaming 이 아닐 경우 user 에서 삭제.
-		// TODO : gaming 이 true 이면 나뒀다가 game 종료시 삭제..
+		roomAndIndex = getRoomAndIndexByUserSockId(sockId);
+		if (roomAndIndex) {
+			room = roomAndIndex.room;
+			if (room.gaming) { // TODO : gaming 이 true 이면 나뒀다가 game 종료시 삭제..
+				// TODO game 중이면 mon에 표시해줘야하나? 턴 10초 자동 넘기기?
+			} else { // gaming 이 아닐 경우 user 에서 삭제.
+				room.users.splice(roomAndIndex.index, 1);
+				sendToMon(room, 'updateRoom', room);
+			}
+		}
 	});
 	
-	//mon - 방 만들기
+	// mon - 방 만들기
 	socket.on('createRoom', function(roomLimit) {
 		var roomNum = roomArr.length;
 		roomArr[roomNum] = {
@@ -166,7 +174,7 @@ io.of('/tank').on('connection', function(socket) {
 		socket.join('room' + roomNum);
 		socket.emit('newRoom', roomNum);
 	});
-	//mon - 누구의 차례인가
+	// mon - 누구의 차례인가
 	socket.on('turn', function(tankIndex) {
 		var roomNum = getRoomNumByMonId(sockId);
 		if (roomNum > -1) {
@@ -174,20 +182,20 @@ io.of('/tank').on('connection', function(socket) {
 		}
 	});
 	
-	//mon - 게임시작
-	//mon - 게임 끝
+	// mon - 게임시작
+	// mon - 게임 끝
 	
 	
-	//remote - join
+	// remote - join
 	socket.on('join', function(userInfo) {
 		var roomNum, room, tankIndex, roomAndIndex;
 		roomNum = userInfo.roomNum;
 		room = roomArr[roomNum];
 		if (!room) {
-			socket.emit('error', '존재하지 않는 방입니다.');
+			socket.emit('error', '방이 존재하지 않습니다.');
 			return;
 		}
-		//TODO 이 시점에서 재접속한 유저를 판단해보자 (clientUniq 값)
+		// 이 시점에서 게임중에 재접속한 유저를 판단해 살려주자 (clientUniq 값)
 		roomAndIndex = getRoomAndIndexByUserUniq(userInfo.clientUniq);
 		if (roomAndIndex && roomAndIndex.room === room) {
 			tankIndex = roomAndIndex.index;
@@ -220,7 +228,7 @@ io.of('/tank').on('connection', function(socket) {
 			roomNum: roomNum
 		});
 	});
-	//remote - tank (angle, power, fire)
+	// remote - tank (angle, power, fire)
 	socket.on('tank', function(data) {
 		var roomAndIndex = getRoomAndIndexByUserSockId(sockId);
 		if (roomAndIndex) {
