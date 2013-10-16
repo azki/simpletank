@@ -75,7 +75,7 @@ server.listen(89);
 function getRoomNumByMonId(monId) {
 	var roomNum = -1;
 	roomArr.forEach(function (room, index) {
-		if (room.monId === monId) {
+		if (room && room.monId === monId) {
 			roomNum = index;
 		}
 	});
