@@ -46,6 +46,7 @@ simpleTank.Tanks.prototype = {
 				x: randX,
 				y: this.map.getYByX(randX),
 				angle: tankAngle,
+				power: 0.5,
 				color: player.getColor(i),
 				name: player.getName(i)
 			});
