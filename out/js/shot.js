@@ -112,27 +112,21 @@ simpleTank.Shot.prototype = {
 		var x, y;
 		x = Math.round(this.x);
 		y = Math.round(this.y);
-		return this.map.height <= y || this.map.getYByX(x) <= y || this.tanks.getFar(x, y) <= 5;
+		return this.map.height <= y || this.map.getYByX(x) <= y || this.tanks.getFar(x, y) <= 5 || x < 0 || this.map.width <= x;
 	},
 	hit: function() {
 		var x, y;
 		x = Math.round(this.x);
 		y = Math.round(this.y);
 		if (x < 0 || this.map.width <= x) {
-			this.shooting = false;
-			if (this.callback) {
-				this.callback({
-					x: -1,
-					y: -1
-				});
-				this.callback = null;
-			}
-			if (this.shotOption.type !== "test") {
-				this.redraw();
+			if (this.shotOption.type === "test") {
+				this.shootTest(-1, -1);
+			} else {
+				this.processAfterShoot();
 			}
 		} else {
 			if (this.shotOption.type === "test") {
-				this.shootTest();
+				this.shootTest(Math.round(this.x), Math.round(this.y));
 			} else {
 				if (this.shotOption.type === "move") {
 					this.shootMove(x);
@@ -142,10 +136,7 @@ simpleTank.Shot.prototype = {
 			}
 		}
 	},
-	shootTest: function() {
-		var x, y;
-		x = Math.round(this.x);
-		y = Math.round(this.y);
+	shootTest: function(x, y) {
 		this.shooting = false;
 		if (this.callback) {
 			this.callback({
@@ -192,34 +183,34 @@ simpleTank.Shot.prototype = {
 			thisP.redraw(); // update and draw particles
 		}, 20);
 		this.timer = setTimeout(function() {
-			var x, y;
 			thisP.timer = null;
 			thisP.redraw();
 			thisP.damage();
 			thisP.dig();
 			thisP.timer = setTimeout(function() {
-				thisP.redraw();
-				thisP.explosion = false;
-				thisP.shooting = false;
-				if (thisP.shotOption.type === "doubleShot") {
-					thisP.tanks.spentDoubleShot();
-					thisP.shotOption.type = "shot";
-					thisP.initShot(thisP.shotOption);
-					thisP.shoot(thisP.callback);
-				} else {
-					thisP.map.rndWind();
-					if (thisP.callback) {
-						x = Math.round(thisP.x);
-						y = Math.round(thisP.y);
-						thisP.callback({
-							x: x,
-							y: y
-						});
-						thisP.callback = null;
-					}
-				}
+				thisP.processAfterShoot();
 			}, BOMB_DELAY - 200);
 		}, 200);
+	},
+	processAfterShoot: function () {
+		this.explosion = false;
+		this.shooting = false;
+		this.redraw();
+		if (this.shotOption.type === "doubleShot" && this.tanks.isAlive()) {
+			this.tanks.spentDoubleShot();
+			this.shotOption.type = "shot";
+			this.initShot(this.shotOption);
+			this.shoot(this.callback);
+		} else {
+			this.map.rndWind();
+			if (this.callback) {
+				this.callback({
+					x: Math.round(this.x),
+					y: Math.round(this.y)
+				});
+				this.callback = null;
+			}
+		}
 	},
 	damage: function() {
 		var x, y;

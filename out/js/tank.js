@@ -68,6 +68,7 @@ simpleTank.Tank.prototype = {
 		ctx.fillStyle = 0 < this.hp ? this.color : "#000";
 		ctx.arc(0, -this.tankDepth, this.tankSize, 0, Math.PI, true);
 		ctx.fill();
+		
 		if (0 < this.hp) {//tank gun
 			ctx.moveTo(0, -(this.tankDepth + this.tankSize));
 			gunX = this.getGunX();
@@ -89,6 +90,7 @@ simpleTank.Tank.prototype = {
 		ctx.lineTo(this.tankSize, -this.tankDepth);
 		ctx.closePath();
 		ctx.fill();
+		
 		if (0 < this.hp) {//tank gun
 			ctx.moveTo(0, -(this.tankDepth + this.tankSize));
 			gunX = this.getGunX();

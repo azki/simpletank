@@ -94,7 +94,7 @@ simpleTank.Tanks.prototype = {
 				break;
 			}
 			if (oriTurn === turn) {
-				if (tanks[turn].hp < 0) {
+				if (tanks[turn].hp <= 0) {
 					this.turn = -1;
 				}
 				return;
@@ -407,7 +407,7 @@ simpleTank.Tanks.prototype = {
 			far = tank.getFar(x, y);
 			if (far <= damageRange) {
 				tank.hp -= Math.ceil(value * ((damageRange - far) * (damageRange - far)) / (damageRange * damageRange));
-				if (tank.hp < 0) {
+				if (tank.hp <= 0) {
 					needRedraw = true;
 				}
 			}
@@ -415,6 +415,13 @@ simpleTank.Tanks.prototype = {
 		if (needRedraw) {
 			this.redraw();
 		}
+	},
+	isAlive: function() {
+		if (this.turn < 0) {
+			return false;
+		}
+		var tank = this.tankArr[this.turn];
+		return tank.hp > 0;
 	},
 	spentDoubleShot: function() {
 		//only client.

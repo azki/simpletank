@@ -107,7 +107,7 @@ simpleTank.Ui.prototype = {
 		for (i = 0; i < len; i += 1) {
 			tank = tanks.getTank(i);
 			hp = tank.hp;
-			if (hp < 0) {
+			if (hp <= 0) {
 				hp = 0;
 			}
 			$("#player" + i + "hpBar").width(hp * 3).children(0).text(tank.name + " (hp: " + hp + ")");
