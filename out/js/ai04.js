@@ -190,7 +190,7 @@ simpleTank.Ai04.prototype = {
 				angle = direction;
 			}
 			else {
-				mapY = map.getDataValue(mapX);
+				mapY = map.getYByX(mapX);
 				angle = -Math.round((Math.atan((mapY - myY) / (mapX - myX)) * 180 / Math.PI));
 			}
 			if (0 < direction) {

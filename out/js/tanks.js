@@ -44,7 +44,7 @@ simpleTank.Tanks.prototype = {
 			tank = tanks[i] = new this.nameSpace.Tank(this.ctx, {
 				type: 1, //동그란 모양만.
 				x: randX,
-				y: this.map.getDataValue(randX),
+				y: this.map.getYByX(randX),
 				angle: tankAngle,
 				color: player.getColor(i),
 				name: player.getName(i)
@@ -63,7 +63,7 @@ simpleTank.Tanks.prototype = {
 			needRedraw = false;
 			for (i = 0; i < len; i += 1) {
 				tank = tanks[i];
-				mapY = map.getDataValue(tank.x);
+				mapY = map.getYByX(tank.x);
 				if (tank.y < mapY) {
 					tank.y += 1;
 					needRedraw = true;

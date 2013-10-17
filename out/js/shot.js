@@ -112,7 +112,7 @@ simpleTank.Shot.prototype = {
 		var x, y;
 		x = Math.round(this.x);
 		y = Math.round(this.y);
-		return this.map.height <= y || this.map.getDataValue(x) <= y || this.tanks.getFar(x, y) <= 5;
+		return this.map.height <= y || this.map.getYByX(x) <= y || this.tanks.getFar(x, y) <= 5;
 	},
 	hit: function() {
 		var x, y;
@@ -260,9 +260,6 @@ simpleTank.Shot.prototype = {
 		}
 		
 		ctx.restore();
-	},
-	getDataValue: function(x) {
-		return this.mapData[x];
 	}
 };
 

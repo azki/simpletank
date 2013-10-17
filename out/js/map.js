@@ -78,7 +78,7 @@ simpleTank.Map.prototype = {
 		ctx.moveTo(this.width - 1, this.height - 1);
 		ctx.lineTo(0, this.height - 1);
 		for (i = 0; i < this.width; i += 1) {
-			ctx.lineTo(i, this.getDataValue(i));
+			ctx.lineTo(i, this.getYByX(i));
 		}
 		ctx.closePath();
 		ctx.fill();
@@ -99,7 +99,7 @@ simpleTank.Map.prototype = {
 		}
 		this.mapData = 0.5 < Math.random() ? map : map.reverse();
 	},
-	getDataValue: function(x) {
+	getYByX: function(x) {
 		return this.mapData[x];
 	},
 	dig: function(x, y, range) {
