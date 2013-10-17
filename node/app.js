@@ -182,8 +182,8 @@ io.of('/tank').on('connection', function(socket) {
 		}
 	});
 	
-	// mon - 게임시작
-	// mon - 게임 끝
+	// TODO mon - 게임시작
+	// TODO mon - 게임 끝
 	
 	
 	// remote - join

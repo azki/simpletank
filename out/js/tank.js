@@ -28,26 +28,26 @@ simpleTank.Tank.prototype = {
 		this.gunLength = 0;
 		this.doubleShot = 0;
 	},
-	initTank: function() {
-		this["initTankType" + this.type]();
+	initTank: function(mapWidth) {
+		this["initTankType" + this.type](mapWidth);
 	},
-	initTankType1: function() {
+	initTankType1: function(mapWidth) {
 		this.hp = 100;
 		this.power = 0.5;
 		this.tankDepth = 1;
-		this.tankSize = 14;
-		this.gunLength = 10;
-		this.damageRage = 40;
+		this.tankSize = Math.ceil(10 * (mapWidth / 640));;
+		this.gunLength = Math.ceil(10 * (mapWidth / 640));;
+		this.damageRage = Math.ceil(20 * (mapWidth / 640));
 		this.damageValue = 50;
 		this.doubleShot = 2;
 	},
-	initTankType2: function() {
+	initTankType2: function(mapWidth) {
 		this.hp = 100;
 		this.power = 0.5;
 		this.tankDepth = 1;
-		this.tankSize = 14;
-		this.gunLength = 10;
-		this.damageRage = 40;
+		this.tankSize = Math.ceil(10 * (mapWidth / 640));;
+		this.gunLength = Math.ceil(10 * (mapWidth / 640));;
+		this.damageRage = Math.ceil(20 * (mapWidth / 640));
 		this.damageValue = 50;
 		this.doubleShot = 2;
 	},

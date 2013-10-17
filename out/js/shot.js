@@ -173,14 +173,15 @@ simpleTank.Shot.prototype = {
 		}
 	},
 	shootExplosion: function() {
-		var thisP, bombStartTime, bombTimer;
+		var thisP, mapWidth, bombStartTime, bombTimer;
 		thisP = this;
 		this.explosion = true;
 		this.redraw();
 		
 		this.particles = [];
-		createExplosion(this.particles, this.x, this.y, this.color);
-		createExplosion(this.particles, this.x, this.y, "#525252");
+		mapWidth = this.map.width;
+		createExplosion(this.particles, this.x, this.y, this.color, mapWidth / 640);
+		createExplosion(this.particles, this.x, this.y, "#525252", mapWidth / 640);
 		
 		bombStartTime = new Date();
 		bombTimer = setInterval(function() {
@@ -318,10 +319,10 @@ function Particle() {
  * 	x, y - explosion center
  * 	color - particles' color
  */
-function createExplosion(particles, x, y, color) {
+function createExplosion(particles, x, y, color, sizeScale) {
 	var minSize, maxSize, count, minSpeed, maxSpeed, minScaleSpeed, maxScaleSpeed, angle, particle, speed;
-	minSize = 10;
-	maxSize = 30;
+	minSize = Math.ceil(10 * sizeScale);
+	maxSize = Math.ceil(30 * sizeScale);
 	count = 10;
 	minSpeed = 60.0;
 	maxSpeed = 200.0;

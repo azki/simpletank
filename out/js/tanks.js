@@ -49,7 +49,7 @@ simpleTank.Tanks.prototype = {
 				color: player.getColor(i),
 				name: player.getName(i)
 			});
-			tank.initTank();
+			tank.initTank(mapWidth);
 		}
 	},
 	land: function() {
@@ -113,9 +113,9 @@ simpleTank.Tanks.prototype = {
 		ctx.save();
 		
 		ctx.clearRect(0, 0, mapWidth, mapHeight);
-		this.drawTurn(ctx, mapWidth - (160 + len * 40), 20, 10);
+		//this.drawTurn(ctx, mapWidth - (160 + len * 40), 20, 10);
 		this.drawAssist(ctx);
-		this.drawHp(ctx, mapWidth - (50 + len * 40), 20, 10, 15);
+		this.drawHp(ctx, mapWidth - (80 + len * 40), 20, 15, 15);
 		for (i = 0; i < len; i += 1) {
 			tanks[i].redraw();
 		}
@@ -263,7 +263,7 @@ simpleTank.Tanks.prototype = {
 		y2 = y + size;
 		ctx.lineTo(x2, y2);
 		//P
-		x2 = x + (size + space);
+		x2 = x + (size + space + 2);
 		ctx.moveTo(x2, y);
 		y2 = y + size;
 		ctx.lineTo(x2, y2);
@@ -275,7 +275,7 @@ simpleTank.Tanks.prototype = {
 		x2 -= size;
 		ctx.lineTo(x2, y2);
 		//:
-		x2 = x + (size + space) * 2;
+		x2 = x + (size + space + 2) * 2;
 		y2 = y + Math.round(size / 5);
 		ctx.moveTo(x2, y2);
 		y2 += Math.round(size / 5);
