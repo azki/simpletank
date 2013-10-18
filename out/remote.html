@@ -26,6 +26,14 @@
 			    text-align: left;
 			}
 			
+			#statusPanel {
+				padding: 10px;
+			}
+			#status {
+				font-size:larger;
+				font-weight:bold;
+			}
+			
 			#nickNamePanel label {
 			    display: inline-block;
 			}
@@ -44,8 +52,8 @@
 	</head>
 	<body>
 		<form onsubmit="return false;">
-			<div id="statusPanel" class="r-panel ui-body-a" data-role="header">
-				<h1 id="status">status</h1>
+			<div id="statusPanel" class="r-panel ui-body-a">
+				<span id="status">status</span>
 			</div>
 			<div id="nickNamePanel" class="r-panel ui-body-c" data-role="fieldcontain">
 				<label for="nickName">
@@ -132,8 +140,8 @@ window.onload = function() {
 		$("#status").html(info.roomNum + "번 방에 입장했어요!");
 		isRoom = true;
 	});
-	socket.on("error", function(msg) {
-		$("#status").html("Error : " + msg);
+	socket.on("tank_error", function(msg) {
+		$("#status").html("Error : " + msg + msg + msg + msg);
 		isRoom = false;
 	});
 	

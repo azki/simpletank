@@ -146,7 +146,7 @@ io.of('/tank').on('connection', function(socket) {
 		roomNum = getRoomNumByMonId(sockId);
 		if (roomNum > -1) {
 			roomArr[roomNum] = null;
-			socket.broadcast.to('room' + roomNum).emit('error', '방이 닫혔습니다. (게임 종료)');
+			socket.broadcast.to('room' + roomNum).emit('tank_error', '방이 닫혔습니다. (게임 종료)');
 		}
 		
 		// user 일 경우.
@@ -192,7 +192,7 @@ io.of('/tank').on('connection', function(socket) {
 		roomNum = userInfo.roomNum;
 		room = roomArr[roomNum];
 		if (!room) {
-			socket.emit('error', '방이 존재하지 않습니다.');
+			socket.emit('tank_error', '방이 존재하지 않습니다.');
 			return;
 		}
 		// 이 시점에서 게임중에 재접속한 유저를 판단해 살려주자 (clientUniq 값)
@@ -207,11 +207,11 @@ io.of('/tank').on('connection', function(socket) {
 			};
 		} else {
 			if (room.gaming === true) {
-				socket.emit('error', '현재 게임이 진행중입니다. 게임이 끝난 후 입장 가능합니다.');
+				socket.emit('tank_error', '현재 게임이 진행중입니다. 게임이 끝난 후 입장 가능합니다.');
 				return;
 			}
 			if (room.users.length >= room.userLimit) {
-				socket.emit('error', '현재 방이 꽉 찼습니다.');
+				socket.emit('tank_error', '현재 방이 꽉 찼습니다.');
 				return;
 			}
 			tankIndex = room.users.length;
