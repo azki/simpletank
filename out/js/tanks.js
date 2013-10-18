@@ -103,6 +103,18 @@ simpleTank.Tanks.prototype = {
 		this.turn = turn;
 		this.redraw();
 	},
+	getAliveCount: function() {
+		var tanks, i, len, aliveCount;
+		tanks = this.tankArr;
+		len = tanks.length;
+		aliveCount = 0;
+		for (i = 0; i < len; i += 1) {
+			if (tanks[i].hp > 0) {
+				aliveCount += 1;
+			}
+		}
+		return aliveCount;
+	},
 	redraw: function() {
 		var ctx, i, len, tanks, mapWidth, mapHeight;
 		ctx = this.ctx;
@@ -430,5 +442,13 @@ simpleTank.Tanks.prototype = {
 		}
 		var tank = this.tankArr[this.turn];
 		tank.doubleShot -= 1;
+	},
+	hasDoubleShot: function() {
+		//only client.
+		if (this.turn < 0) {
+			throw "getDamageRage";
+		}
+		var tank = this.tankArr[this.turn];
+		return tank.doubleShot > 0;
 	}
 };

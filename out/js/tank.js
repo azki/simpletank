@@ -37,7 +37,7 @@ simpleTank.Tank.prototype = {
 		this.tankSize = Math.ceil(10 * (mapWidth / 640));
 		this.gunLength = Math.ceil(10 * (mapWidth / 640));
 		this.damageRage = Math.ceil(20 * (mapWidth / 640));
-		this.damageValue = 40;
+		this.damageValue = 70;
 		this.doubleShot = 2;
 	},
 	initTankType2: function(mapWidth) {
@@ -46,7 +46,7 @@ simpleTank.Tank.prototype = {
 		this.tankSize = Math.ceil(10 * (mapWidth / 640));
 		this.gunLength = Math.ceil(10 * (mapWidth / 640));
 		this.damageRage = Math.ceil(20 * (mapWidth / 640));
-		this.damageValue = 40;
+		this.damageValue = 70;
 		this.doubleShot = 2;
 	},
 	redraw: function() {

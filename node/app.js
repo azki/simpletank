@@ -18,10 +18,11 @@ var sockMap = {};
 var roomArr = [];
 // {sockId:{sockId,socket},}
 
-['css', 'img', 'js'].forEach(function (dirName) {
+['css', 'img', 'js'].forEach(function(dirName) {
 	app.use('/' + dirName, express.static(OUT_DIR + '/' + dirName));
 });
-var sendMonitorHtml = function (req, res) {
+var sendMonitorHtml = function(req, res) {
+	res.header('Cache-Control', 'no-cache,must-revalidate');
 	res.header('Content-Type', 'text/html;charset=UTF-8');
 	fs.readFile(OUT_DIR + '/monitor.html', function(err, data) {
 		if (err) {
@@ -32,7 +33,8 @@ var sendMonitorHtml = function (req, res) {
 		res.end(data);
 	});
 };
-var sendRemoteHtml = function (req, res) {
+var sendRemoteHtml = function(req, res) {
+	res.header('Cache-Control', 'no-cache,must-revalidate');
 	res.header('Content-Type', 'text/html;charset=UTF-8');
 	fs.readFile(OUT_DIR + '/remote.html', function(err, data) {
 		if (err) {
@@ -45,7 +47,7 @@ var sendRemoteHtml = function (req, res) {
 };
 app.get('/mon', sendMonitorHtml);
 app.get('/monitor', sendMonitorHtml);
-app.get('/:roomNum', function (req, res) {
+app.get('/:roomNum', function(req, res) {
 	var roomNum = req.params.roomNum;
 	if (roomNum && +roomNum >= 0) {
 		sendRemoteHtml(req, res);
@@ -53,10 +55,11 @@ app.get('/:roomNum', function (req, res) {
 		res.send(404, '/' + roomNum + ' is Not Found.');
 	}
 });
-app.get('/', function (req, res) {
+app.get('/', function(req, res) {
+	res.header('Cache-Control', 'no-cache,must-revalidate');
 	res.header('Content-Type', 'text/html;charset=UTF-8');
 	var resHtml = '<h1>현재 생성된 방들</h1>';
-	roomArr.forEach(function (room, index) {
+	roomArr.forEach(function(room, index) {
 		if (room) {
 			resHtml += '<p><a href="/' + index + '">' + index + '번 방</a> ';
 			if (room.gaming) {
@@ -67,6 +70,7 @@ app.get('/', function (req, res) {
 			resHtml += ' (' + room.users.length + '/' + room.userLimit + ')</p>';
 		}
 	});
+	resHtml += '<p><a href="javascript:location.reload();">새로고침</a></p>';
 	res.end(resHtml);
 });
 server.listen(89);
@@ -74,7 +78,7 @@ server.listen(89);
 
 function getRoomNumByMonId(monId) {
 	var roomNum = -1;
-	roomArr.forEach(function (room, index) {
+	roomArr.forEach(function(room, index) {
 		if (room && room.monId === monId) {
 			roomNum = index;
 		}
@@ -90,7 +94,7 @@ function getRoomAndIndexByUserSockId(userSockId) {
 	var i, len, myIndex, checkFn;
 	len = roomArr.length;
 	myIndex = -1;
-	checkFn = function (user, index) {
+	checkFn = function(user, index) {
 		if (user.sockId === userSockId) {
 			myIndex = index;
 		}
@@ -113,7 +117,7 @@ function getRoomAndIndexByUserUniq(userUniq) {
 	var i, len, myIndex, checkFn;
 	len = roomArr.length;
 	myIndex = -1;
-	checkFn = function (user, index) {
+	checkFn = function(user, index) {
 		if (user.clientUniq === userUniq) {
 			myIndex = index;
 		}
@@ -141,7 +145,7 @@ io.of('/tank').on('connection', function(socket) {
 	socket.on('disconnect', function() {
 		delete sockMap[sockId];
 		
-		var roomNum, roomAndIndex, room;
+		var roomNum, roomAndIndex, room, i, len, user;
 		// mon 일 경우.
 		roomNum = getRoomNumByMonId(sockId);
 		if (roomNum > -1) {
@@ -153,11 +157,19 @@ io.of('/tank').on('connection', function(socket) {
 		roomAndIndex = getRoomAndIndexByUserSockId(sockId);
 		if (roomAndIndex) {
 			room = roomAndIndex.room;
-			if (room.gaming) { // TODO : gaming 이 true 이면 나뒀다가 game 종료시 삭제..
-				// TODO game 중이면 mon에 표시해줘야하나? 턴 10초 자동 넘기기?
-			} else { // gaming 이 아닐 경우 user 에서 삭제.
+			if (room.gaming) { // 게임중일 때는 user 에 connected=false 만 체크.
+				len = room.users.length;
+				for (i = 0; i < len; i += 1) {
+					user = room.users[i];
+					if (user.sockId === sockId) {
+						user.connected = false;
+					}
+				}
+				sendToMon(room, 'updateRoom', room);
+			} else { // 게임중이 아닐 경우 user 에서 삭제.
 				room.users.splice(roomAndIndex.index, 1);
 				sendToMon(room, 'updateRoom', room);
+				socket.broadcast.to('room' + roomNum).emit('clear_ready');
 			}
 		}
 	});
@@ -174,21 +186,99 @@ io.of('/tank').on('connection', function(socket) {
 		socket.join('room' + roomNum);
 		socket.emit('newRoom', roomNum);
 	});
+	// mon - HP
+	socket.on('hp', function(hpArr) {
+		var roomNum, users, len, i, user;
+		roomNum = getRoomNumByMonId(sockId);
+		if (roomNum > -1) {
+			users = roomArr[roomNum].users;
+			len = users.length;
+			for (i = 0; i < len; i += 1) {
+				user = users[i];
+				if (sockMap[user.sockId]) {
+					sockMap[user.sockId].socket.emit('hp', hpArr[i]);
+				}
+			}
+		}
+	});
 	// mon - 누구의 차례인가
-	socket.on('turn', function(tankIndex) {
+	socket.on('turn', function(info) {
+		var turnIndex, hpArr, roomNum, users, len, i, user, waitTurn, j;
+		turnIndex = info.turnIndex;
+		hpArr = info.hpArr;
+		roomNum = getRoomNumByMonId(sockId);
+		if (roomNum > -1) {
+			users = roomArr[roomNum].users;
+			len = users.length;
+			for (i = 0; i < len; i += 1) {
+				user = users[i];
+				if (sockMap[user.sockId]) {
+					
+					//아오 머리 안돌아가서 대충 노가다.
+					waitTurn = 0;
+					j = i;
+					if (j !== turnIndex) {
+						waitTurn = 4;
+						j += 1;
+						if (j >= hpArr.length) {
+							j = 0;
+						}
+						if (hpArr[j] > 0) {
+							waitTurn -= 1;
+						}
+						if (j !== turnIndex) {
+							j += 1;
+							if (j >= hpArr.length) {
+								j = 0;
+							}
+							if (hpArr[j] > 0) {
+								waitTurn -= 1;
+							}
+							if (j !== turnIndex) {
+								j += 1;
+								if (j >= hpArr.length) {
+									j = 0;
+								}
+								if (hpArr[j] > 0) {
+									waitTurn -= 1;
+								}
+							}
+						}
+					}
+					
+					sockMap[user.sockId].socket.emit('waitTurnToMyTurn', waitTurn);
+				}
+			}
+		}
+	});
+	// mon - 게임시작
+	socket.on('startGame', function() {
 		var roomNum = getRoomNumByMonId(sockId);
 		if (roomNum > -1) {
-			socket.broadcast.to('room' + roomNum).emit('turn', tankIndex);
+			roomArr[roomNum].gaming = true;
+			socket.broadcast.to('room' + roomNum).emit('startGame');
+		}
+	});
+	// TODO mon - 게임 끝
+	socket.on('endGame', function(tankIndex) {
+		var roomNum, users, len, i;
+		roomNum = getRoomNumByMonId(sockId);
+		if (roomNum > -1) {
+			roomArr[roomNum].gaming = false;
+			users = roomArr[roomNum].users;
+			len = users.length;
+			for (i = len - 1; i >= 0; i -= 1) {
+				if (users[i].connected === false) {
+					users.splice(i, 1);
+				}
+			}
+			socket.broadcast.to('room' + roomNum).emit('endGame');
 		}
 	});
 	
-	// TODO mon - 게임시작
-	// TODO mon - 게임 끝
-	
-	
 	// remote - join
 	socket.on('join', function(userInfo) {
-		var roomNum, room, tankIndex, roomAndIndex;
+		var roomNum, room, tankIndex, roomAndIndex, isRebirth;
 		roomNum = userInfo.roomNum;
 		room = roomArr[roomNum];
 		if (!room) {
@@ -196,16 +286,20 @@ io.of('/tank').on('connection', function(socket) {
 			return;
 		}
 		// 이 시점에서 게임중에 재접속한 유저를 판단해 살려주자 (clientUniq 값)
-		roomAndIndex = getRoomAndIndexByUserUniq(userInfo.clientUniq);
-		if (roomAndIndex && roomAndIndex.room === room) {
-			tankIndex = roomAndIndex.index;
-			room.users[tankIndex] = {
-				sockId: sockId,
-				clientUniq: userInfo.clientUniq,
-				nickName: userInfo.nickName,
-				roomNum: userInfo.roomNum
-			};
-		} else {
+//		roomAndIndex = getRoomAndIndexByUserUniq(userInfo.clientUniq);
+//		if (roomAndIndex && roomAndIndex.room === room) {
+//			isRebirth = true;
+//			tankIndex = roomAndIndex.index;
+//			room.users[tankIndex] = {
+//				sockId: sockId,
+//				clientUniq: userInfo.clientUniq,
+//				nickName: userInfo.nickName,
+//				roomNum: userInfo.roomNum,
+//				connected: true
+//			};
+//		} else {
+		if (true) {
+			isRebirth = false;
 			if (room.gaming === true) {
 				socket.emit('tank_error', '현재 게임이 진행중입니다. 게임이 끝난 후 입장 가능합니다.');
 				return;
@@ -219,11 +313,13 @@ io.of('/tank').on('connection', function(socket) {
 				sockId: sockId,
 				clientUniq: userInfo.clientUniq,
 				nickName: userInfo.nickName,
-				roomNum: userInfo.roomNum
+				roomNum: userInfo.roomNum,
+				connected: true
 			});
 		}
 		socket.join('room' + roomNum);
 		sendToMon(room, 'updateRoom', room);
+		socket.broadcast.to('room' + roomNum).emit('clear_ready');
 		socket.emit('okRoom', {
 			roomNum: roomNum
 		});
@@ -233,11 +329,12 @@ io.of('/tank').on('connection', function(socket) {
 		var roomAndIndex = getRoomAndIndexByUserSockId(sockId);
 		if (roomAndIndex) {
 			sendToMon(roomAndIndex.room, 'set_' + data.name, {
-				tankIndex: roomAndIndex.index, 
+				tankIndex: roomAndIndex.index,
 				value: data.value
 			});
 		}
 	});
+	// remote - ready
 });
 
 

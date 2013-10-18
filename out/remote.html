@@ -34,10 +34,13 @@
 				font-weight:bold;
 			}
 			
+			#readyRoomUi, #gameRoomUi {
+				display:none;
+			}
+			
 			#nickNamePanel label {
 			    display: inline-block;
 			}
-			
 			#nickName {
 			    width: 40%;
 			    display: inline-block;
@@ -55,41 +58,47 @@
 			<div id="statusPanel" class="r-panel ui-body-a">
 				<span id="status">status</span>
 			</div>
-			<div id="nickNamePanel" class="r-panel ui-body-c" data-role="fieldcontain">
-				<label for="nickName">
-					nick name:
-				</label>&nbsp;<input type="text" name="nickName" id="nickName" value="" />
+			<div id="readyRoomUi">
+				<div id="nickNamePanel" class="r-panel ui-body-c" data-role="fieldcontain">
+					<label for="nickName">
+						nick name:
+					</label>&nbsp;<input type="text" name="nickName" id="nickName" value="" />
+				</div>
+				<div id="readyPanel" class="r-panel ui-body-c" data-role="fieldcontain">
+					<button id="ready" type="button">
+						Ready
+					</button>
+					<span>마음의 준비가 되셨으면,
+						<br/>
+						Ready 버튼을 노란색으로 바꿔주세요
+					</span>
+				</div>
 			</div>
-			<div id="readyPanel" class="r-panel ui-body-c" data-role="fieldcontain">
-				<button id="ready" type="button" data-theme="e">
-					Ready
-				</button>
-				<span>마음의 준비가 되셨으면,
+			<div id="gameRoomUi">
+				<div id="hpPanel" class="r-panel ui-body-b">
+					<span id="myNick">azki</span>'s HP: <span id="hp">100</span>
+				</div>
+				<div id="anglePanel" class="r-panel ui-body-c">
+					<h2>Angle</h2>
+					<input type="range" name="angleSlider" id="angleSlider" value="45" min="1" max="179" data-highlight="true" />
+				</div>
+				<div id="powerPanel" class="r-panel ui-body-c">
+					<h2>Power</h2>
+					<input type="range" name="powerSlider" id="powerSlider" value="50" min="0" max="99" data-highlight="true" />
+				</div>
+				<div id="btnsPanel" class="r-panel ui-body-c">
+					<button id="doubleShot" type="button" data-inline="true">
+						double shot
+					</button>
+					<span id="remainDoubleShot">2</span>발 남았습니다.
 					<br/>
-					Ready 버튼을 노란색으로 바꿔주세요
-				</span>
-			</div>
-			<div id="hpPanel" class="r-panel ui-body-b">
-				<span id="myNick">azki</span>'s HP: <span id="hp">100</span>
-			</div>
-			<div id="anglePanel" class="r-panel ui-body-c">
-				<h2>Angle</h2>
-				<input type="range" name="angleSlider" id="angleSlider" value="45" min="1" max="179" data-highlight="true" />
-			</div>
-			<div id="powerPanel" class="r-panel ui-body-c">
-				<h2>Power</h2>
-				<input type="range" name="powerSlider" id="powerSlider" value="50" min="0" max="99" data-highlight="true" />
-			</div>
-			<div id="btnsPanel" class="r-panel ui-body-c">
-				<button id="move" type="button" data-inline="true">
-					moving (&infin;)
-				</button>
-				<button id="doubleShot" type="button" data-inline="true">
-					double shot (2/2)
-				</button>
-				<button id="shot" type="button" data-inline="true">
-					normal shot (&infin;)
-				</button>
+					<button id="move" type="button" data-inline="true">
+						moving (&infin;)
+					</button>
+					<button id="shot" type="button" data-inline="true">
+						normal shot (&infin;)
+					</button>
+				</div>
 			</div>
 		</form>
 		<script>
@@ -119,13 +128,25 @@ window.onload = function() {
 		}
 	}());
 	
+	function showReadyRoom() {
+		$("#gameRoomUi").hide();
+		$("#readyRoomUi").show();
+	}
+	function showGameRoom() {
+		$("#readyRoomUi").hide();
+		$("#gameRoomUi").show();
+	}
+	
 	//vars
 	var isRoom = false;
-	var isMyTurn = false; // TODO.
-	var remainDoubleShotCount = 2; // TODO.
+	var isMyTurn = false;
+	var myHp = 100;
+	var remainDoubleShotCount = 2;
+	var isReady = false;
 	var socket = io4azki.connect("/tank");
 	socket.on("connect", function() {
-		$("#status").html("접속 중입니다.");
+		console.log("connect");
+		$("#status").html("접속 중입니다...");
 		socket.emit("join", {
 			clientUniq: clientUniq,
 			nickName: nickName,
@@ -133,16 +154,66 @@ window.onload = function() {
 		});
 	});
 	socket.on("disconnect", function() {
-		$("#status").html("접속이 끊켰어요..");
+		console.log("disconnect");
+		$("#status").html("접속이 끊어졌어요ㅠㅠ");
 		isRoom = false;
+		$("#readyRoomUi").hide();
+		$("#gameRoomUi").hide();
 	});
 	socket.on("okRoom", function(info) {
-		$("#status").html(info.roomNum + "번 방에 입장했어요!");
+		console.log("okRoom", info);
+		$("#status").html(ROOM_NUM + "번 방 대기실");
 		isRoom = true;
+		sendAngle();
+		sendPower();
+		showReadyRoom();
 	});
 	socket.on("tank_error", function(msg) {
-		$("#status").html("Error : " + msg + msg + msg + msg);
+		console.log("tank_error", msg);
+		$("#status").html('<span style="color:#f44">Error: ' + msg + '</span>');
 		isRoom = false;
+	});
+	socket.on("clear_ready", function() {
+		console.log("clear_ready");
+		isReady = false;
+		$(this).attr("data-theme", isReady ? "e" : "c");
+	});
+	socket.on("startGame", function() {
+		console.log("startGame");
+		$("#status").html("게임이 시작되었습니다.");
+		isRoom = true;
+		isMyTurn = false;
+		myHp = 100;
+		remainDoubleShotCount = 2;
+		$("#remainDoubleShot").text(remainDoubleShotCount);
+		showGameRoom();
+	});
+	socket.on("waitTurnToMyTurn", function(waitTurn) {
+		console.log("waitTurnToMyTurn", waitTurn);
+		if (myHp <= 0) {
+			$("#status").html("죽었습니다.");
+			isMyTurn = false;
+		} else if (waitTurn === 0) {
+			$("#status").html("내 차례입니다.");
+			isMyTurn = true;
+		} else {
+			$("#status").html(waitTurn + "턴 후 차례가 돌아옵니다.");
+			isMyTurn = false;
+		}
+		sendAngle();
+		sendPower();
+	});
+	socket.on("endGame", function() {
+		console.log("endGame");
+		$("#status").html(ROOM_NUM + "번 방 대기실");
+		isRoom = true;
+		isMyTurn = false;
+		showReadyRoom();
+	});
+	socket.on("hp", function(hp) {
+		console.log("hp", hp);
+		myHp = hp;
+		$("#hp").text(hp);
 	});
 	
 	function sendAngle() {
@@ -169,15 +240,38 @@ window.onload = function() {
 				name: "fire",
 				value: fireType
 			});
+			isMyTurn = false;
 		}
 	}
 	
 	$("#angleSlider").change(sendAngle);
 	$("#powerSlider").change(sendPower);
-	$("#move,#doubleShot,#shot").click(function() {
+	$("#move,#shot").click(function() {
+		if (isMyTurn === false) {
+			return;
+		}
 		sendFire($(this).attr("id"));
 	});
-	
+	$("#doubleShot").click(function() {
+		if (isMyTurn === false) {
+			return;
+		}
+		if (remainDoubleShotCount > 0) {
+			remainDoubleShotCount -= 1;
+			$("#remainDoubleShot").text(remainDoubleShotCount);
+			sendFire($(this).attr("id"));
+		}
+	});
+	$("#ready").click(function() {
+		if (isRoom) {
+			isReady = !isReady;
+			socket.emit("tank", {
+				name: "ready",
+				value: isReady
+			});
+			$(this).css("background-color", isReady ? "yellow" : "");
+		}
+	})
 };
 		</script>
 	</body>

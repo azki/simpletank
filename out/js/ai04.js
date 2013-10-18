@@ -61,7 +61,7 @@ simpleTank.Ai04.prototype = {
 				}
 				api.shoot.apply(ui, [{
 					type: shotType,
-					bomb: thisP.lastDirection === 0 ? 1 : 0
+					bomb: thisP.player.hasAliveUser(thisP.tanks) ? 0 : 1
 				}, function (result) {
 					thisP.setShootResult(result, thisP.lastPower);
 				}]);

@@ -14,40 +14,34 @@ simpleTank.Ui.prototype = {
 		this.map = map;
 		this.tanks = tanks;
 		this.shot = shot;
-		this.player = player;
-		this.tank = null;
 		this.callback = callback || null;
-		
-		tanks.initTanks(player);
-		tanks.redraw();
-		player.initAi({
-			obj: this,
-			redraw: function() {
-				this.setTurnTank();
-				this.tanks.redraw();
-			},
-			shoot: this.shoot
-		}, map, tanks);
-		
-		this.initEvent();
-		this.drawTankHp();
-		this.setTurnTank();
+		//this.initEvent();
+		this.newGame(player);
 	},
 	newGame: function(player) {
-		var tanks, shot;
+		var map, tanks, shot;
+		map = this.map;
 		tanks = this.tanks;
 		shot = this.shot;
 		
-		this.player.stopAi();
-		this.player = player;
+		map.newMapData();
+		map.redraw();
+		map.rndWind();
 		
+		if (this.player) {
+			this.player.stopAi();
+		}
+		this.player = player;
+		this.tank = null;
 		tanks.initTanks(player);
 		tanks.redraw();
+		
 		shot.stop();
 		shot.initShot({
 			type: "temp"
 		});
 		shot.redraw();
+		
 		player.initAi({
 			obj: this,
 			redraw: function() {
@@ -83,6 +77,21 @@ simpleTank.Ui.prototype = {
 			}
 		}
 		this.drawPinWheel();
+	},
+	getHpArr: function () {
+		var len, i, result;
+		len = this.tanks.count;
+		result = [];
+		for (i = 0; i < len; i += 1) {
+			result[i] = this.tanks.getTank(i).hp;
+		}
+		return result;
+	},
+	getNickName: function (index) {
+		return this.player.getName(index);
+	},
+	getAliveCount: function () {
+		return this.tanks.getAliveCount();
 	},
 	getTurnIndex: function () {
 		return this.tanks.turn;
@@ -122,6 +131,9 @@ simpleTank.Ui.prototype = {
 			$("#powerValue").val(powerValue);
 		}
 	},
+	/**
+	 * @deprecated
+	 */
 	initEvent: function() {
 		var thisP;
 		thisP = this;
@@ -165,6 +177,9 @@ simpleTank.Ui.prototype = {
 			}
 		});
 	},
+	/**
+	 * @deprecated
+	 */
 	shootFromEvent: function(option) {
 		this.shootable = false;
 		this.shoot(option, null);
@@ -174,6 +189,11 @@ simpleTank.Ui.prototype = {
 		thisP = this;
 		tanks = this.tanks;
 		shot = this.shot;
+		if (option.type === "doubleShot") {
+			if (tanks.hasDoubleShot() === false) {
+				option.type = "shot";
+			}
+		}
 		shot.initShot(option);
 		shot.shoot(function(result) {
 			tanks.passTurn();
@@ -228,8 +248,11 @@ simpleTank.Ui.prototype = {
 		}
 	},
 	fire: function(shootType, callback) {
-		this.shoot({
-			type: shootType
-		}, callback);
+		if (this.shootable) {
+			this.shootable = false;
+			this.shoot({
+				type: shootType
+			}, callback);
+		}
 	}
 };

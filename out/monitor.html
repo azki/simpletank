@@ -73,8 +73,14 @@
 /*global $,simpleTank,io4azki*/
 /*global ROOM_LIMIT*/
 "use strict";
+var COLOR_MAP = ["#f00", "#00f", "#ff0", "#f0f"];
 var ROOM_LIMIT = 4;
 var map, tanks, shot;
+var readyArr = [];
+var countDownTimer = null;
+var tankUsers = [];
+var isGameStarted = false;
+
 $(function() {
 	var mapWidth, mapHeight, i, cvmap, cvtank, cvshot, mapCtx, tankCtx, shotCtx;
 	mapWidth = innerWidth;
@@ -99,9 +105,6 @@ $(function() {
 			map: map,
 			tanks: tanks
 		});
-		map.newMapData();
-		map.redraw();
-		
 		startFirstGame();
 	} else {
 		$("#canvasPanel").html("<h1>Canvas를 지원하지 않는 브라우저입니다.</h1>");
@@ -111,64 +114,143 @@ $(function() {
 function startFirstGame() {
 	var player, ui;
 	player = new simpleTank.Player([{
-		type: "user",
+		type: "Ai04",
+		difficulty: 1,
 		color: "#f00",
-		name: "유저1",
+		name: "컴퓨터0",
 		team: 1
 	}, {
 		type: "Ai04",
-		difficulty: 1,
+		difficulty: 4,
 		color: "#00f",
 		name: "컴퓨터1",
 		team: 2
 	}, {
 		type: "Ai04",
-		difficulty: 3,
+		difficulty: 7,
 		color: "#ff0",
 		name: "컴퓨터2",
 		team: 3
 	}, {
 		type: "Ai04",
-		difficulty: 9,
+		difficulty: 10,
 		color: "#f0f",
 		name: "컴퓨터3",
 		team: 4
 	}]);
+	window.endGame = function() {
+		if (isGameStarted === false) {
+			map.newMapData();
+			map.redraw();
+			ui.newGame(player);
+			ui.nextPlayer();
+			startReadyRoom();
+		}
+	};
 	ui = new simpleTank.Ui(map, tanks, shot, player, function(result) {
 		if (result.type === "turnLost") {
-			setTimeout(function() {
-				map.newMapData();
-				map.redraw();
-				ui.newGame(player);
-				ui.nextPlayer();
-			}, 3000);
+			//TODO game over.
+			if (isGameStarted === false) {
+				setTimeout(endGame, 1000 * 3);
+			}
 		}
 	});
+	ui.onNewTurn = onNewTurn;
 	window.tankUi = ui;
-	ui.onNewTurn = function () {
-		console.log("onNewTurn", arguments);
-	};
 	ui.nextPlayer();
 	initSock();
 }
 
-function startGame() {
-	//TODO player
+function onNewTurn(turnIndex) {
+	console.log("onNewTurn", isGameStarted, turnIndex);
+	if (isGameStarted === false) {
+		return;
+	}
+	console.log("tankUi.getHpArr()", tankUi.getHpArr());
+	socket.emit("hp", tankUi.getHpArr());
+	if (tankUi.getAliveCount() <= 1) {
+		if (tankUi.getAliveCount() === 0) {
+			$("#message")
+			.html('<p>무승부</p>')
+			.css("display", "inline-block")
+			.removeClass()
+			.addClass("animated bounceInDown");
+		} else {
+			$("#message")
+			.html('<p><b>승리!!</b><h1 style="color:' + COLOR_MAP[turnIndex] + '">' + tankUi.getNickName(turnIndex) + '</h1></p>')
+			.css("display", "inline-block")
+			.removeClass()
+			.addClass("animated bounceInDown");
+		}
+		setTimeout(function () {
+			isGameStarted = false;
+			endGame();
+			socket.emit("endGame");
+		}, 1000 * 5);
+	} else {
+		var tankUser = tankUsers[turnIndex];
+		if (tankUser && tankUser.connected === false) {
+			tankUi.setAngle(turnIndex, 90);
+			tankUi.setPower(turnIndex, 0);
+			tankUi.fire("shot");
+		} else {
+			socket.emit("turn", {
+				hpArr: tankUi.getHpArr(),
+				turnIndex: turnIndex
+			});
+		}
+	}
 }
 
-function updateReadyRoomUser(users) {
-	var i, len, user;
-	len = users.length;
+function startTankGame() {
+	var i, len, playerArr, player;
+	playerArr = [];
+	len = tankUsers.length;
 	for (i = 0; i < len; i += 1) {
-		user = users[i];
-		$("#user" + i + " .nick").text(user.nickName);
-		$("#user" + i + " .ready").css("visibility", user.ready ? "" : "hidden");
+		playerArr.push({
+			type: "user",
+			color: COLOR_MAP[i],
+			name: tankUsers[i].nickName,
+			team: i + 1
+		});
+	}
+	while (i < ROOM_LIMIT) {
+		playerArr.push({
+			type: "Ai04",
+			difficulty: i * 2 + 3,
+			color: COLOR_MAP[i],
+			name: "컴퓨터" + i,
+			team: i + 1
+		});
+		i += 1;
+	}
+	player = new simpleTank.Player(playerArr);
+	tankUi.newGame(player);
+	socket.emit("startGame");
+	isGameStarted = true;
+	tankUi.nextPlayer();
+}
+
+function startReadyRoom() {
+	showRoomMessage();
+	showUserTable();
+	tankUsers = [];
+	updateReadyRoomUser();
+}
+
+function updateReadyRoomUser() {
+	var i, len, user;
+	len = tankUsers.length;
+	for (i = 0; i < len; i += 1) {
+		$("#user" + i + " .nick").text(tankUsers[i].nickName);
+		$("#user" + i + " .ready").css("visibility", "hidden");
 	}
 	while (i < ROOM_LIMIT) {
 		if (i === 0) {
 			$("#user" + i + " .nick").text("[주인을 기다립니다.]");
 			$("#user" + i + " .ready").css("visibility", "hidden");
 		} else {
+			readyArr[i] = true;
 			$("#user" + i + " .nick").text("컴퓨터" + i);
 			$("#user" + i + " .ready").css("visibility", "");
 		}
@@ -176,28 +258,95 @@ function updateReadyRoomUser(users) {
 	}
 }
 
+function readyCheck() {
+	var i, readyUserCount;
+	readyUserCount = 0;
+	for (i = 0; i < ROOM_LIMIT; i += 1) {
+		if (readyArr[i]) {
+			readyUserCount += 1;
+			$("#user" + i + " .ready").css("visibility", "");
+		} else {
+			$("#user" + i + " .ready").css("visibility", "hidden");
+		}
+	}
+	if (readyUserCount >= ROOM_LIMIT) {
+		startCountDown();
+	} else {
+		cancelCountDown();
+		showRoomMessage();
+	}
+}
+
 var ROOM_NUM = 0;
+var hideRoomMessageTimer = null;
+function cancelHideRoomMessageTimer() {
+	if (hideRoomMessageTimer) {
+		clearTimeout(hideRoomMessageTimer);
+		hideRoomMessageTimer = null;
+	}
+}
 function showRoomMessage() {
+	cancelHideRoomMessageTimer();
 	$("#message")
-	.html('<p>모바일에서<br/><b>http://azki.org:89/' + ROOM_NUM + '</b><br/>로 접속하세요.</p>')
+	.html('<p>모바일에서<br/><b>http://azki.org:89/' + ROOM_NUM + '</b><br/>로 접속하세요(최대 4명).</p>')
 	.css("display", "inline-block")
 	.removeClass()
 	.addClass("animated bounceInDown");
 }
 function hideRoomMessage() {
+	cancelHideRoomMessageTimer();
 	$("#message").removeClass().addClass("animated bounceOutDown");
+	hideRoomMessageTimer = setTimeout(function () {
+		$("#message").css("display", "none");
+		cancelHideRoomMessageTimer();
+	}, 2000);
+}
+function cancelCountDown() {
+	if (countDownTimer != null) {
+		clearInterval(countDownTimer);
+		countDownTimer = null;
+	}
+}
+function startCountDown() {
+	var countDownNum = 3;
+	cancelCountDown();
+	countDownTimer = setInterval(function () {
+		if (countDownTimer) {
+			$("#message").html("<p>게임을 <b>" + countDownNum + "</b>초 후 시작합니다.<p>")
+			countDownNum -= 1;
+			if (countDownNum < 0) {
+				cancelCountDown();
+				hideRoomMessage();
+				hideUserTable();
+				startTankGame();
+			}
+		}
+	}, 1000);
+}
+var hideUserTableTimer = null;
+function cancelHideUserTableTimer() {
+	if (hideUserTableTimer) {
+		clearTimeout(hideUserTableTimer);
+		hideUserTableTimer = null;
+	}
 }
 function showUserTable() {
+	cancelHideUserTableTimer();
 	$("#userTable")
 	.css("display", "inline-table")
 	.removeClass()
 	.addClass("animated bounceInDown");
 }
 function hideUserTable() {
+	cancelHideUserTableTimer();
 	$("#userTable").removeClass().addClass("animated bounceOutDown");
+	hideUserTableTimer = setTimeout(function () {
+		$("#userTable").css("display", "none");
+		cancelHideUserTableTimer();
+	}, 2000);
 }
+var socket;
 function initSock() {
-	var socket;
 	socket = io4azki.connect("/tank");
 	socket.on("connect", function() {
 		socket.emit("createRoom", ROOM_LIMIT);
@@ -208,10 +357,7 @@ function initSock() {
 	});
 	socket.on("newRoom", function(roomNum) {
 		ROOM_NUM = roomNum;
-		showRoomMessage();
-		showUserTable();
-		updateReadyRoomUser([]);
-		//TODO Ai 끼리 연습게임 시작함..
+		startReadyRoom();
 	});
 	socket.on("set_angle", function(data) {
 		console.log("set_angle", data);
@@ -224,16 +370,36 @@ function initSock() {
 	socket.on("set_fire", function(data) {
 		console.log("set_fire", data);
 		if (tankUi.getTurnIndex() === data.tankIndex) {
-			tankUi.fire(data.value, function(){
+			tankUi.fire(data.value, function() {
 				//TODO send nextTurn to server.
-				console.log('TODO nextTurn');
+				//console.log('TODO nextTurn');
 			});
 		}
 	});
+	socket.on("set_ready", function(data) {
+		console.log("set_ready", data);
+		readyArr[data.tankIndex] = data.value;
+		readyCheck();
+	});
 	socket.on("updateRoom", function(room) {
 		console.log("updateRoom", room);
-		updateReadyRoomUser(room.users);
-		// TODO 모두 레디일 경우 5초 후 시작..
+		tankUsers = room.users;
+		if (isGameStarted) {
+			// TODO 누가 접속이 끊어졌는지 Toast??
+			// 현재 해당 턴의 탱크면 패스하게.
+			var turnIndex, tankUser;
+			turnIndex = tankUi.getTurnIndex();
+			tankUser = tankUsers[turnIndex];
+			if (tankUser && tankUser.connected === false) {
+				tankUi.setAngle(turnIndex, 90);
+				tankUi.setPower(turnIndex, 0);
+				tankUi.fire("shot");
+			}
+		} else {
+			readyArr = [];
+			updateReadyRoomUser();
+			readyCheck();
+		}
 	});
 }
 		</script>

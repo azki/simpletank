@@ -30,6 +30,18 @@ simpleTank.Player.prototype = {
 			}
 		}
 	},
+	hasAliveUser: function(tanks) {
+		var i, len;
+		len = this.data.length;
+		for (i = 0; i < len; i += 1) {
+			if (this.isAi(i) === false) {
+				if (tanks.getTank(i).hp > 0) {
+					return true;
+				}
+			}
+		}
+		return false;
+	},
 	stopAi: function() {
 		var len, i, ai;
 		len = this.count;
