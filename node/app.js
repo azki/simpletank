@@ -203,7 +203,7 @@ io.of('/tank').on('connection', function(socket) {
 	});
 	// mon - 누구의 차례인가
 	socket.on('turn', function(info) {
-		var turnIndex, hpArr, roomNum, users, len, i, user, waitTurn, j;
+		var turnIndex, hpArr, roomNum, users, len, i, user, waitTurn, tempTurnIndex;
 		turnIndex = info.turnIndex;
 		hpArr = info.hpArr;
 		roomNum = getRoomNumByMonId(sockId);
@@ -213,39 +213,17 @@ io.of('/tank').on('connection', function(socket) {
 			for (i = 0; i < len; i += 1) {
 				user = users[i];
 				if (sockMap[user.sockId]) {
-					
-					//아오 머리 안돌아가서 대충 노가다.
 					waitTurn = 0;
-					j = i;
-					if (j !== turnIndex) {
-						waitTurn = 4;
-						j += 1;
-						if (j >= hpArr.length) {
-							j = 0;
+					tempTurnIndex = turnIndex;
+					while (i !== tempTurnIndex) {
+						tempTurnIndex += 1;
+						if (tempTurnIndex >= hpArr.length) {
+							tempTurnIndex = 0;
 						}
-						if (hpArr[j] > 0) {
-							waitTurn -= 1;
-						}
-						if (j !== turnIndex) {
-							j += 1;
-							if (j >= hpArr.length) {
-								j = 0;
-							}
-							if (hpArr[j] > 0) {
-								waitTurn -= 1;
-							}
-							if (j !== turnIndex) {
-								j += 1;
-								if (j >= hpArr.length) {
-									j = 0;
-								}
-								if (hpArr[j] > 0) {
-									waitTurn -= 1;
-								}
-							}
+						if (hpArr[tempTurnIndex] > 0) {
+							waitTurn += 1;
 						}
 					}
-					
 					sockMap[user.sockId].socket.emit('waitTurnToMyTurn', waitTurn);
 				}
 			}

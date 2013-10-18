@@ -139,20 +139,18 @@ function startFirstGame() {
 		team: 4
 	}]);
 	window.endGame = function() {
-		if (isGameStarted === false) {
-			map.newMapData();
-			map.redraw();
-			ui.newGame(player);
-			ui.nextPlayer();
-			startReadyRoom();
-		}
+		map.newMapData();
+		map.redraw();
+		ui.newGame(player);
+		ui.nextPlayer();
+		startReadyRoom();
+		socket.emit("endGame");
 	};
 	ui = new simpleTank.Ui(map, tanks, shot, player, function(result) {
 		if (result.type === "turnLost") {
 			//TODO game over.
-			if (isGameStarted === false) {
-				setTimeout(endGame, 1000 * 3);
-			}
+			console.log("### turnLost");
+			setTimeout(endGame, 1000 * 3);
 		}
 	});
 	ui.onNewTurn = onNewTurn;
@@ -169,6 +167,7 @@ function onNewTurn(turnIndex) {
 	console.log("tankUi.getHpArr()", tankUi.getHpArr());
 	socket.emit("hp", tankUi.getHpArr());
 	if (tankUi.getAliveCount() <= 1) {
+		isGameStarted = false;
 		if (tankUi.getAliveCount() === 0) {
 			$("#message")
 			.html('<p>무승부</p>')
@@ -182,10 +181,9 @@ function onNewTurn(turnIndex) {
 			.removeClass()
 			.addClass("animated bounceInDown");
 		}
+		console.log("### getAliveCount");
 		setTimeout(function () {
-			isGameStarted = false;
 			endGame();
-			socket.emit("endGame");
 		}, 1000 * 5);
 	} else {
 		var tankUser = tankUsers[turnIndex];
