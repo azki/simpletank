@@ -31,7 +31,7 @@ simpleTank.Shot.prototype = {
 		this.particles = [];
 	},
 	initShot: function(option) {
-		var tanks, angle, power;
+		var tanks, angle, power, mapWidth;
 		if (option && option.type === "test") {
 			this.x = option.x;
 			this.y = option.y;
@@ -47,9 +47,14 @@ simpleTank.Shot.prototype = {
 			this.damageRage = tanks.getDamageRage();
 			this.damageValue = tanks.getDamageValue();
 		}
+		
+		//map 크기 보정.
+		mapWidth = this.map.width
+		power *= mapWidth / 1024;
+		
 		if (option && option.bomb === 1) {
-			this.damageRage *= 3;
-			this.damageValue *= 3;
+			this.damageRage *= 2;
+			this.damageValue *= 2;
 		}
 		if (0 < angle) {
 			angle += 180;

@@ -70,7 +70,7 @@
 					</button>
 					<span>마음의 준비가 되셨으면,
 						<br/>
-						Ready 버튼을 노란색으로 바꿔주세요
+						Ready 버튼을 눌러주세요.
 					</span>
 				</div>
 			</div>
@@ -112,6 +112,7 @@ window.onload = function() {
 		localStorage.setItem("nickName", nickName);
 	}
 	$("#nickName").val(nickName);
+	$("#myNick").text(nickName);
 	
 	//init room number.
 	(function() {
@@ -168,7 +169,7 @@ window.onload = function() {
 	socket.on("clear_ready", function() {
 		console.log("clear_ready");
 		isReady = false;
-		$(this).attr("data-theme", isReady ? "e" : "c");
+		$("#ready").css("background-color", isReady ? "yellow" : "");
 	});
 	socket.on("startGame", function() {
 		console.log("startGame");

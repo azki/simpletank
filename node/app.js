@@ -115,11 +115,13 @@ function getRoomAndIndexByUserSockId(userSockId) {
 
 io.of('/tank').on('connection', function(socket) {
 	var sockId = socket.id;
+	console.log('connection', sockId);
 	sockMap[sockId] = {
 		sockId: sockId,
 		socket: socket
 	};
 	socket.on('disconnect', function() {
+		console.log('disconnect', sockId);
 		delete sockMap[sockId];
 		
 		var roomNum, roomAndIndex, room, i, len, user;
@@ -139,20 +141,24 @@ io.of('/tank').on('connection', function(socket) {
 				for (i = 0; i < len; i += 1) {
 					user = room.users[i];
 					if (user.sockId === sockId) {
+						console.log(sockId, 'connected = false');
 						user.connected = false;
 					}
 				}
 				sendToMon(room, 'updateRoom', room);
+				console.log('exit when room.gaming', room.users);
 			} else { // 게임중이 아닐 경우 user 에서 삭제.
 				room.users.splice(roomAndIndex.index, 1);
 				sendToMon(room, 'updateRoom', room);
 				socket.broadcast.to('room' + roomNum).emit('clear_ready');
+				console.log('exit when not room.gaming', room.users);
 			}
 		}
 	});
 	
 	// mon - 방 만들기
 	socket.on('createRoom', function(roomLimit) {
+		console.log(sockId, 'createRoom');
 		var roomNum = roomArr.length;
 		roomArr[roomNum] = {
 			monId: sockId,
@@ -165,6 +171,7 @@ io.of('/tank').on('connection', function(socket) {
 	});
 	// mon - HP
 	socket.on('hp', function(hpArr) {
+		console.log(sockId, 'hp', hpArr);
 		var roomNum, users, len, i, user;
 		roomNum = getRoomNumByMonId(sockId);
 		if (roomNum > -1) {
@@ -180,6 +187,7 @@ io.of('/tank').on('connection', function(socket) {
 	});
 	// mon - 누구의 차례인가
 	socket.on('turn', function(info) {
+		console.log(sockId, 'turn', info);
 		var turnIndex, hpArr, roomNum, users, len, i, user, waitTurn, tempTurnIndex;
 		turnIndex = info.turnIndex;
 		hpArr = info.hpArr;
@@ -208,6 +216,7 @@ io.of('/tank').on('connection', function(socket) {
 	});
 	// mon - 게임시작
 	socket.on('startGame', function() {
+		console.log(sockId, 'startGame');
 		var roomNum = getRoomNumByMonId(sockId);
 		if (roomNum > -1) {
 			roomArr[roomNum].gaming = true;
@@ -215,24 +224,29 @@ io.of('/tank').on('connection', function(socket) {
 		}
 	});
 	// TODO mon - 게임 끝
-	socket.on('endGame', function(tankIndex) {
-		var roomNum, users, len, i;
+	socket.on('endGame', function() {
+		console.log(sockId, 'endGame');
+		var roomNum, room, users, len, i;
 		roomNum = getRoomNumByMonId(sockId);
 		if (roomNum > -1) {
-			roomArr[roomNum].gaming = false;
-			users = roomArr[roomNum].users;
+			room = roomArr[roomNum];
+			room.gaming = false;
+			users = room.users;
 			len = users.length;
 			for (i = len - 1; i >= 0; i -= 1) {
 				if (users[i].connected === false) {
 					users.splice(i, 1);
 				}
 			}
+			sendToMon(room, 'updateRoom', room);
 			socket.broadcast.to('room' + roomNum).emit('endGame');
+			socket.broadcast.to('room' + roomNum).emit('clear_ready');
 		}
 	});
 	
 	// remote - join
 	socket.on('join', function(userInfo) {
+		console.log(sockId, 'join', userInfo);
 		var roomNum, room, tankIndex, roomAndIndex;
 		roomNum = userInfo.roomNum;
 		room = roomArr[roomNum];

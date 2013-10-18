@@ -58,7 +58,8 @@ simpleTank.Ui.prototype = {
 		player = this.player;
 		tanks = this.tanks;
 		turn = tanks.turn;
-		if (0 <= turn) {
+		
+		if (turn >= 0 && this.getAliveCount() > 1) {
 			tank = tanks.getTurnTank();
 			playerType = player.getType(turn);
 			this.shootable = playerType === "user";
@@ -72,11 +73,22 @@ simpleTank.Ui.prototype = {
 			this.shootable = false;
 			if (this.callback) {
 				this.callback({
-					type: "turnLost"
+					type: "turnLost",
+					isDraw: this.getAliveCount() === 0,
+					turnIndex: turn
 				});
 			}
 		}
 		this.drawPinWheel();
+	},
+	die: function(tankIndex) {
+		this.tanks.getTank(tankIndex).hp = 0;
+	},
+	nextPass: function () {
+		this.tanks.passTurn();
+		this.drawTankHp();
+		this.setTurnTank();
+		this.nextPlayer();
 	},
 	getHpArr: function () {
 		var len, i, result;

@@ -112,7 +112,7 @@ $(function() {
 });
 
 function startFirstGame() {
-	var player, ui;
+	var player, ui, reGameTimer;
 	player = new simpleTank.Player([{
 		type: "Ai04",
 		difficulty: 1,
@@ -139,6 +139,10 @@ function startFirstGame() {
 		team: 4
 	}]);
 	window.endGame = function() {
+		if (reGameTimer) {
+			clearTimeout(reGameTimer);
+			reGameTimer = null;
+		}
 		map.newMapData();
 		map.redraw();
 		ui.newGame(player);
@@ -146,11 +150,28 @@ function startFirstGame() {
 		startReadyRoom();
 		socket.emit("endGame");
 	};
+	reGameTimer = null;
 	ui = new simpleTank.Ui(map, tanks, shot, player, function(result) {
 		if (result.type === "turnLost") {
 			//TODO game over.
-			console.log("### turnLost");
-			setTimeout(endGame, 1000 * 3);
+			console.log("### turnLost", isGameStarted, result);
+			if (isGameStarted) {
+				isGameStarted = false;
+				if (result.isDraw) {
+					$("#message").html('<p>무승부</p>')
+					.css("display", "inline-block").removeClass().addClass("animated bounceInDown");
+				}
+				else {
+					var turnIndex = result.turnIndex;
+					$("#message").html('<p><b>승리!!</b><h1 style="color:' + COLOR_MAP[turnIndex] + '">' + tankUi.getNickName(turnIndex) + '</h1></p>')
+					.css("display", "inline-block").removeClass().addClass("animated bounceInDown");
+				}
+			}
+			if (reGameTimer) {
+				clearTimeout(reGameTimer);
+				reGameTimer = null;
+			}
+			reGameTimer = setTimeout(endGame, 1000 * 7);
 		}
 	});
 	ui.onNewTurn = onNewTurn;
@@ -166,37 +187,16 @@ function onNewTurn(turnIndex) {
 	}
 	console.log("tankUi.getHpArr()", tankUi.getHpArr());
 	socket.emit("hp", tankUi.getHpArr());
-	if (tankUi.getAliveCount() <= 1) {
-		isGameStarted = false;
-		if (tankUi.getAliveCount() === 0) {
-			$("#message")
-			.html('<p>무승부</p>')
-			.css("display", "inline-block")
-			.removeClass()
-			.addClass("animated bounceInDown");
-		} else {
-			$("#message")
-			.html('<p><b>승리!!</b><h1 style="color:' + COLOR_MAP[turnIndex] + '">' + tankUi.getNickName(turnIndex) + '</h1></p>')
-			.css("display", "inline-block")
-			.removeClass()
-			.addClass("animated bounceInDown");
-		}
-		console.log("### getAliveCount");
-		setTimeout(function () {
-			endGame();
-		}, 1000 * 5);
+	var tankUser = tankUsers[turnIndex];
+	if (tankUser && tankUser.connected === false) {
+		console.log("die", turnIndex);
+		tankUi.die(turnIndex);
+		tankUi.nextPass();
 	} else {
-		var tankUser = tankUsers[turnIndex];
-		if (tankUser && tankUser.connected === false) {
-			tankUi.setAngle(turnIndex, 90);
-			tankUi.setPower(turnIndex, 0);
-			tankUi.fire("shot");
-		} else {
-			socket.emit("turn", {
-				hpArr: tankUi.getHpArr(),
-				turnIndex: turnIndex
-			});
-		}
+		socket.emit("turn", {
+			hpArr: tankUi.getHpArr(),
+			turnIndex: turnIndex
+		});
 	}
 }
 
@@ -232,7 +232,6 @@ function startTankGame() {
 function startReadyRoom() {
 	showRoomMessage();
 	showUserTable();
-	tankUsers = [];
 	updateReadyRoomUser();
 }
 
@@ -355,14 +354,15 @@ function initSock() {
 	});
 	socket.on("newRoom", function(roomNum) {
 		ROOM_NUM = roomNum;
+		tankUsers = [];
 		startReadyRoom();
 	});
 	socket.on("set_angle", function(data) {
-		console.log("set_angle", data);
+		//console.log("set_angle", data);
 		tankUi.setAngle(data.tankIndex, data.value);
 	});
 	socket.on("set_power", function(data) {
-		console.log("set_power", data);
+		//console.log("set_power", data);
 		tankUi.setPower(data.tankIndex, data.value);
 	});
 	socket.on("set_fire", function(data) {
@@ -389,9 +389,8 @@ function initSock() {
 			turnIndex = tankUi.getTurnIndex();
 			tankUser = tankUsers[turnIndex];
 			if (tankUser && tankUser.connected === false) {
-				tankUi.setAngle(turnIndex, 90);
-				tankUi.setPower(turnIndex, 0);
-				tankUi.fire("shot");
+				tankUi.die(turnIndex);
+				tankUi.nextPass();
 			}
 		} else {
 			readyArr = [];
