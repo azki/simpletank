@@ -105,13 +105,6 @@
 "use strict";
 var ROOM_NUM = -1;
 window.onload = function() {
-	//create client unique key.
-	var clientUniq = localStorage.getItem("clientUniq");
-	if (!clientUniq) {
-		clientUniq = Math.random().toString(36).substr(2);
-		localStorage.setItem("clientUniq", clientUniq);
-	}
-	
 	//input nickName
 	var nickName = localStorage.getItem("nickName");
 	if (!nickName) {
@@ -148,7 +141,6 @@ window.onload = function() {
 		console.log("connect");
 		$("#status").html("접속 중입니다...");
 		socket.emit("join", {
-			clientUniq: clientUniq,
 			nickName: nickName,
 			roomNum: ROOM_NUM
 		});

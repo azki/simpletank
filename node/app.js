@@ -10,7 +10,7 @@ var app = express();
 var http = require('http');
 var server = http.createServer(app);
 var io = require('socket.io').listen(server, {
-	log: true
+	log: false
 });
 
 var sockMap = {};
@@ -96,29 +96,6 @@ function getRoomAndIndexByUserSockId(userSockId) {
 	myIndex = -1;
 	checkFn = function(user, index) {
 		if (user.sockId === userSockId) {
-			myIndex = index;
-		}
-	};
-	for (i = 0; i < len; i += 1) {
-		if (roomArr[i]) {
-			roomArr[i].users.forEach(checkFn);
-			if (myIndex > -1) {
-				return {
-					room: roomArr[i],
-					index: myIndex
-				};
-			}
-		}
-	}
-	return null;
-}
-
-function getRoomAndIndexByUserUniq(userUniq) {
-	var i, len, myIndex, checkFn;
-	len = roomArr.length;
-	myIndex = -1;
-	checkFn = function(user, index) {
-		if (user.clientUniq === userUniq) {
 			myIndex = index;
 		}
 	};
@@ -256,45 +233,28 @@ io.of('/tank').on('connection', function(socket) {
 	
 	// remote - join
 	socket.on('join', function(userInfo) {
-		var roomNum, room, tankIndex, roomAndIndex, isRebirth;
+		var roomNum, room, tankIndex, roomAndIndex;
 		roomNum = userInfo.roomNum;
 		room = roomArr[roomNum];
 		if (!room) {
 			socket.emit('tank_error', '방이 존재하지 않습니다.');
 			return;
 		}
-		// 이 시점에서 게임중에 재접속한 유저를 판단해 살려주자 (clientUniq 값)
-//		roomAndIndex = getRoomAndIndexByUserUniq(userInfo.clientUniq);
-//		if (roomAndIndex && roomAndIndex.room === room) {
-//			isRebirth = true;
-//			tankIndex = roomAndIndex.index;
-//			room.users[tankIndex] = {
-//				sockId: sockId,
-//				clientUniq: userInfo.clientUniq,
-//				nickName: userInfo.nickName,
-//				roomNum: userInfo.roomNum,
-//				connected: true
-//			};
-//		} else {
-		if (true) {
-			isRebirth = false;
-			if (room.gaming === true) {
-				socket.emit('tank_error', '현재 게임이 진행중입니다. 게임이 끝난 후 입장 가능합니다.');
-				return;
-			}
-			if (room.users.length >= room.userLimit) {
-				socket.emit('tank_error', '현재 방이 꽉 찼습니다.');
-				return;
-			}
-			tankIndex = room.users.length;
-			room.users.push({
-				sockId: sockId,
-				clientUniq: userInfo.clientUniq,
-				nickName: userInfo.nickName,
-				roomNum: userInfo.roomNum,
-				connected: true
-			});
+		if (room.gaming === true) {
+			socket.emit('tank_error', '현재 게임이 진행중입니다. 게임이 끝난 후 입장 가능합니다.');
+			return;
 		}
+		if (room.users.length >= room.userLimit) {
+			socket.emit('tank_error', '현재 방이 꽉 찼습니다.');
+			return;
+		}
+		tankIndex = room.users.length;
+		room.users.push({
+			sockId: sockId,
+			nickName: userInfo.nickName,
+			roomNum: userInfo.roomNum,
+			connected: true
+		});
 		socket.join('room' + roomNum);
 		sendToMon(room, 'updateRoom', room);
 		socket.broadcast.to('room' + roomNum).emit('clear_ready');
