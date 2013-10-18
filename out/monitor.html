@@ -27,6 +27,20 @@
 				font-size: xx-large;
 				color: #FFFFA6;
 			}
+			.user {
+				background:rgba(54,57,66,0.75);
+			}
+			.user .nick {
+				font-size:22pt;
+				font-weight:bold;
+				color:#fff;
+			}
+			.user .ready {
+				margin:30px 10px 10px 0;
+				text-align:right;
+				font-size:28pt;
+				color:#D8CAA8;
+			}
 			
 		</style>
 		<link rel="stylesheet" href="./css/animate-wind.css"/>
@@ -60,8 +74,9 @@
 /*global ROOM_LIMIT*/
 "use strict";
 var ROOM_LIMIT = 4;
+var map, tanks, shot;
 $(function() {
-	var mapWidth, mapHeight, i, cvmap, cvtank, cvshot, mapCtx, tankCtx, shotCtx, map, tanks, shot;
+	var mapWidth, mapHeight, i, cvmap, cvtank, cvshot, mapCtx, tankCtx, shotCtx;
 	mapWidth = innerWidth;
 	mapHeight = innerHeight;
 	$("#canvasPanel").width(mapWidth).height(mapHeight);
@@ -87,13 +102,13 @@ $(function() {
 		map.newMapData();
 		map.redraw();
 		
-		startFirstGame(map, tanks, shot);
+		startFirstGame();
 	} else {
 		$("#canvasPanel").html("<h1>Canvas를 지원하지 않는 브라우저입니다.</h1>");
 	}
 });
 
-function startFirstGame(map, tanks, shot) {
+function startFirstGame() {
 	var player, ui;
 	player = new simpleTank.Player([{
 		type: "user",
@@ -136,6 +151,34 @@ function startFirstGame(map, tanks, shot) {
 	ui.nextPlayer();
 	initSock();
 }
+
+function startGame() {
+	//TODO player
+}
+
+function updateReadyRoomUser(users) {
+	var i, len, user;
+	len = users.length;
+	for (i = 0; i < len; i += 1) {
+		user = users[i];
+		$("#user" + i + " .nick").text(user.nickName);
+		$("#user" + i + " .ready").css("visibility", user.ready ? "" : "hidden");
+	}
+	while (i < ROOM_LIMIT) {
+		if (i === 0) {
+			$("#user" + i + " .nick").text("[주인을 기다립니다.]");
+			$("#user" + i + " .ready").css("visibility", "hidden");
+		} else {
+			$("#user" + i + " .nick").text("컴퓨터" + i);
+			$("#user" + i + " .ready").css("visibility", "");
+		}
+		i += 1;
+	}
+	
+	
+	// TODO 빈 공간은 Ai 로 채우자.
+}
+
 var ROOM_NUM = 0;
 function showRoomMessage() {
 	$("#message")
@@ -170,28 +213,30 @@ function initSock() {
 		ROOM_NUM = roomNum;
 		showRoomMessage();
 		showUserTable();
-		//TODO 애들끼리 연습게임 시작함..
+		updateReadyRoomUser([]);
+		//TODO Ai 끼리 연습게임 시작함..
 	});
 	socket.on("set_angle", function(data) {
-		console.log(data);
+		console.log("set_angle", data);
 		tankUi.setAngle(data.tankIndex, data.value);
 	});
 	socket.on("set_power", function(data) {
-		console.log(data);
+		console.log("set_power", data);
 		tankUi.setPower(data.tankIndex, data.value);
 	});
 	socket.on("set_fire", function(data) {
-		console.log(data);
+		console.log("set_fire", data);
 		if (tankUi.getTurnIndex() === data.tankIndex) {
-			//TODO check data.tankIndex
 			tankUi.fire(data.value, function(){
-				//TODO nextTurn
+				//TODO send nextTurn to server.
 				console.log('TODO nextTurn');
 			});
 		}
 	});
-	socket.on("updateRoom", function(users) {
-		console.log(users);
+	socket.on("updateRoom", function(room) {
+		console.log("updateRoom", room);
+		updateReadyRoomUser(room.users);
+		// TODO 모두 레디일 경우 5초 후 시작..
 	});
 }
 		</script>
@@ -209,17 +254,25 @@ function initSock() {
 			<table id="userTable" style="position: relative; display:none; margin-top:50px; width:80%;" border="1">
 			<colgroup><col width="25%"/><col width="25%"/><col width="25%"/><col width="25%"/></colgroup>
 			<tr>
-				<td id="user0" style="background:rgba(0,0,0,0.75); color:#fff;">
+				<td id="user0" class="user">
 					<h1 style="color:#f00">빨간탱크</h1>
+					<div class="nick"></div>
+					<div class="ready">Ready</div>
 				</td>
-				<td id="user1" style="background:rgba(0,0,0,0.75); color:#fff;">
+				<td id="user1" class="user">
 					<h1 style="color:#00f">파란탱크</h1>
+					<div class="nick"></div>
+					<div class="ready">Ready</div>
 				</td>
-				<td id="user2" style="background:rgba(0,0,0,0.75); color:#fff;">
+				<td id="user2" class="user">
 					<h1 style="color:#ff0">노란탱크</h1>
+					<div class="nick"></div>
+					<div class="ready">Ready</div>
 				</td>
-				<td id="user3" style="background:rgba(0,0,0,0.75); color:#fff;">
+				<td id="user3" class="user">
 					<h1 style="color:#f0f">보라탱크</h1>
+					<div class="nick"></div>
+					<div class="ready">Ready</div>
 				</td>
 			</tr></table>
 		</div>
