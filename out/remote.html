@@ -8,52 +8,102 @@
 		<title>Simple Tank : tank.azki.org</title>
 		<link rel="stylesheet" href="http://code.jquery.com/mobile/1.1.0-rc.1/jquery.mobile-1.1.0-rc.1.min.css" />
 		<style type="text/css">
-html,body {margin:0}
-body { font-family:Georgia; }
-#btns { padding:5px; text-align:center;}
-</style>
-		<script src="http://code.jquery.com/jquery-1.7.1.min.js"></script>
-		<script src="http://code.jquery.com/mobile/1.1.0-rc.1/jquery.mobile-1.1.0-rc.1.min.js"></script>
-		<script src="./js/io.min.js"></script>
+			html, body {
+			    margin: 0
+			}
+			
+			body {
+			    font-family: Georgia;
+			}
+			
+			.r-panel {
+			    margin: 0;
+			    text-align: center;
+			}
+			
+			.r-panel h2 {
+			    margin: 0 0 0 15px;
+			    text-align: left;
+			}
+			
+			#nickNamePanel label {
+			    display: inline-block;
+			}
+			
+			#nickName {
+			    width: 40%;
+			    display: inline-block;
+			}
+		</style>
+		<script src="http://code.jquery.com/jquery-1.7.1.min.js">
+		</script>
+		<script src="http://code.jquery.com/mobile/1.1.0-rc.1/jquery.mobile-1.1.0-rc.1.min.js">
+		</script>
+		<script src="./js/io.min.js">
+		</script>
 	</head>
 	<body>
 		<form onsubmit="return false;">
-			<div id="status" class="ui-body ui-body-c">
-				상태메시지
+			<div id="statusPanel" class="r-panel ui-body-a" data-role="header">
+				<h1 id="status">status</h1>
 			</div>
-			<div id="hp" class="ui-body ui-body-c">
-				hp
+			<div id="nickNamePanel" class="r-panel ui-body-c" data-role="fieldcontain">
+				<label for="nickName">
+					nick name:
+				</label>&nbsp;<input type="text" name="nickName" id="nickName" value="" />
 			</div>
-			<div id="angle" class="ui-body ui-body-c">
-				angle<br/>
-				<input type="range" name="angleSlider" id="angleSlider" value="45" min="1" max="179"  data-highlight="true" />
+			<div id="readyPanel" class="r-panel ui-body-c" data-role="fieldcontain">
+				<button id="ready" type="button" data-theme="e">
+					Ready
+				</button>
+				<span>마음의 준비가 되셨으면,
+					<br/>
+					Ready 버튼을 노란색으로 바꿔주세요
+				</span>
 			</div>
-			<div id="power" class="ui-body ui-body-c">
-				power<br/>
-				<input type="range" name="powerSlider" id="powerSlider" value="50" min="0" max="99"  data-highlight="true" />
+			<div id="hpPanel" class="r-panel ui-body-b">
+				<span id="myNick">azki</span>'s HP: <span id="hp">100</span>
 			</div>
-			<div id="btns" class="ui-body ui-body-c">
-				<button id="move" type="button" data-inline="true">move</button>
-				<button id="doubleShot" type="button" data-inline="true">double shot</button>
-				<button id="shot" type="button" data-inline="true">normal shot</button>
+			<div id="anglePanel" class="r-panel ui-body-c">
+				<h2>Angle</h2>
+				<input type="range" name="angleSlider" id="angleSlider" value="45" min="1" max="179" data-highlight="true" />
+			</div>
+			<div id="powerPanel" class="r-panel ui-body-c">
+				<h2>Power</h2>
+				<input type="range" name="powerSlider" id="powerSlider" value="50" min="0" max="99" data-highlight="true" />
+			</div>
+			<div id="btnsPanel" class="r-panel ui-body-c">
+				<button id="move" type="button" data-inline="true">
+					moving (&infin;)
+				</button>
+				<button id="doubleShot" type="button" data-inline="true">
+					double shot (2/2)
+				</button>
+				<button id="shot" type="button" data-inline="true">
+					normal shot (&infin;)
+				</button>
 			</div>
 		</form>
 		<script>
 "use strict";
 var ROOM_NUM = -1;
-window.onload = function(){
+window.onload = function() {
+	//create client unique key.
 	var clientUniq = localStorage.getItem("clientUniq");
 	if (!clientUniq) {
 		clientUniq = Math.random().toString(36).substr(2);
 		localStorage.setItem("clientUniq", clientUniq);
 	}
 	
+	//input nickName
 	var nickName = localStorage.getItem("nickName");
-	while (!nickName) {
+	if (!nickName) {
 		nickName = prompt("닉네임을 입력하세요", "");
 		localStorage.setItem("nickName", nickName);
 	}
+	$("#nickName").val(nickName);
 	
+	//init room number.
 	(function() {
 		var matched = location.href.match(/^\S+\/(\d+)$/);
 		if (matched) {
@@ -61,10 +111,12 @@ window.onload = function(){
 		}
 	}());
 	
+	//vars
 	var isRoom = false;
 	var isMyTurn = false; // TODO.
+	var remainDoubleShotCount = 2; // TODO.
 	var socket = io4azki.connect("/tank");
-	socket.on("connect", function(){
+	socket.on("connect", function() {
 		$("#status").html("접속 중입니다.");
 		socket.emit("join", {
 			clientUniq: clientUniq,
@@ -72,21 +124,19 @@ window.onload = function(){
 			roomNum: ROOM_NUM
 		});
 	});
-	socket.on("disconnect", function(){
+	socket.on("disconnect", function() {
 		$("#status").html("접속이 끊켰어요..");
 		isRoom = false;
 	});
-	socket.on("okRoom", function(info){
+	socket.on("okRoom", function(info) {
 		$("#status").html(info.roomNum + "번 방에 입장했어요!");
 		isRoom = true;
 	});
-	socket.on("error", function(msg){
+	socket.on("error", function(msg) {
 		$("#status").html("Error : " + msg);
 		isRoom = false;
 	});
 	
-	window.dd = socket;
-	 
 	function sendAngle() {
 		if (isRoom) {
 			socket.emit("tank", {
@@ -116,7 +166,7 @@ window.onload = function(){
 	
 	$("#angleSlider").change(sendAngle);
 	$("#powerSlider").change(sendPower);
-	$("#move,#doubleShot,#shot").click(function () {
+	$("#move,#doubleShot,#shot").click(function() {
 		sendFire($(this).attr("id"));
 	});
 	
