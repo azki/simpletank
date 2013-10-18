@@ -176,8 +176,8 @@ simpleTank.Shot.prototype = {
 		
 		this.particles = [];
 		mapWidth = this.map.width;
-		createExplosion(this.particles, this.x, this.y, this.color, mapWidth / 640);
-		createExplosion(this.particles, this.x, this.y, "#525252", mapWidth / 640);
+		createExplosion(this.particles, this.x, this.y, this.color, mapWidth / 640 * this.damageRage / 60);
+		createExplosion(this.particles, this.x, this.y, "#525252", mapWidth / 640 * this.damageRage / 60);
 		
 		bombStartTime = new Date();
 		bombTimer = setInterval(function() {
