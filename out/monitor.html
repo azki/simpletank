@@ -147,6 +147,11 @@ function startFirstGame() {
 	};
 	window.endGame = function() {
 		clearReGameTimer();
+		//end game
+		if (isGameStarted) {
+			isGameStarted = false;
+			socket.emit("endGame");
+		}
 		//bg ai play
 		map.newMapData();
 		map.redraw();
@@ -167,8 +172,6 @@ function startFirstGame() {
 					$("#message").html('<p><b>승리!!</b><h1 style="color:' + COLOR_MAP[turnIndex] + '">' + tankUi.getNickName(turnIndex) + '</h1></p>')
 					.css("display", "inline-block").removeClass().addClass("animated bounceInDown");
 				}
-				isGameStarted = false;
-				socket.emit("endGame");
 			}
 			clearReGameTimer();
 			reGameTimer = setTimeout(endGame, 1000 * 7);
