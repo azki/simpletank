@@ -5,7 +5,7 @@
 		<meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1">
 		<meta name="apple-mobile-web-app-capable" content="yes">
 		<meta name="apple-mobile-web-app-status-bar-style" content="black">
-		<title>Simple Tank : tank.azki.org</title>
+		<title>Simple Tank - azki.org:89</title>
 		<link rel="stylesheet" href="http://code.jquery.com/mobile/1.1.0-rc.1/jquery.mobile-1.1.0-rc.1.min.css" />
 		<style type="text/css">
 			html, body {
@@ -76,27 +76,27 @@
 			</div>
 			<div id="gameRoomUi">
 				<div id="hpPanel" class="r-panel ui-body-b">
-					<span id="myNick">azki</span>'s HP: <span id="hp">100</span>
+					<span id="myNick">azki</span>님의 에너지: <span id="hp">100</span>
 				</div>
 				<div id="anglePanel" class="r-panel ui-body-c">
-					<h2>Angle</h2>
+					<h2>각도</h2>
 					<input type="range" name="angleSlider" id="angleSlider" value="45" min="1" max="179" data-highlight="true" />
 				</div>
 				<div id="powerPanel" class="r-panel ui-body-c">
-					<h2>Power</h2>
-					<input type="range" name="powerSlider" id="powerSlider" value="50" min="0" max="99" data-highlight="true" />
+					<h2>힘</h2>
+					<input type="range" name="powerSlider" id="powerSlider" value="30" min="0" max="99" data-highlight="true" />
 				</div>
 				<div id="btnsPanel" class="r-panel ui-body-c">
 					<button id="doubleShot" type="button" data-inline="true">
-						double shot
+						더블샷
 					</button>
-					<span id="remainDoubleShot">2</span>발 남았습니다.
+					더블샷은 <span id="remainDoubleShot">2</span>발 남았습니다.
 					<br/>
 					<button id="move" type="button" data-inline="true">
-						moving (&infin;)
+						이동 (&infin;)
 					</button>
 					<button id="shot" type="button" data-inline="true">
-						normal shot (&infin;)
+						발사 (&infin;)
 					</button>
 				</div>
 			</div>
@@ -153,8 +153,8 @@ window.onload = function() {
 		$("#readyRoomUi").hide();
 		$("#gameRoomUi").hide();
 	});
-	socket.on("okRoom", function(info) {
-		console.log("okRoom", info);
+	socket.on("successJoin", function() {
+		console.log("successJoin");
 		$("#status").html(ROOM_NUM + "번 방 대기실");
 		isRoom = true;
 		sendAngle();
@@ -184,7 +184,7 @@ window.onload = function() {
 	socket.on("waitTurnToMyTurn", function(waitTurn) {
 		console.log("waitTurnToMyTurn", waitTurn);
 		if (myHp <= 0) {
-			$("#status").html("죽었습니다.");
+			$("#status").html("사망하셨습니다.");
 			isMyTurn = false;
 		} else if (waitTurn === 0) {
 			$("#status").html("내 차례입니다.");
@@ -206,7 +206,11 @@ window.onload = function() {
 	socket.on("hp", function(hp) {
 		console.log("hp", hp);
 		myHp = hp;
-		$("#hp").text(hp);
+		if (hp > 0) {
+			$("#hp").text(hp);
+		} else {
+			$("#hp").text("사망하셨습니다.");
+		}
 	});
 	
 	function sendAngle() {

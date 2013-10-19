@@ -14,13 +14,10 @@ var io = require('socket.io').listen(server, {
 });
 
 var sockMap = {};
-// {sockId:{sockId,socket},}
+// {sockId:socket}
 var roomArr = [];
-// {sockId:{sockId,socket},}
 
-['css', 'img', 'js'].forEach(function(dirName) {
-	app.use('/' + dirName, express.static(OUT_DIR + '/' + dirName));
-});
+
 var sendMonitorHtml = function(req, res) {
 	res.header('Cache-Control', 'no-cache,must-revalidate');
 	res.header('Content-Type', 'text/html;charset=UTF-8');
@@ -45,17 +42,7 @@ var sendRemoteHtml = function(req, res) {
 		res.end(data);
 	});
 };
-app.get('/mon', sendMonitorHtml);
-app.get('/monitor', sendMonitorHtml);
-app.get('/:roomNum', function(req, res) {
-	var roomNum = req.params.roomNum;
-	if (roomNum && +roomNum >= 0) {
-		sendRemoteHtml(req, res);
-	} else {
-		res.send(404, '/' + roomNum + ' is Not Found.');
-	}
-});
-app.get('/', function(req, res) {
+var sendLobby = function (req, res) {
 	res.header('Cache-Control', 'no-cache,must-revalidate');
 	res.header('Content-Type', 'text/html;charset=UTF-8');
 	var resHtml = '<h1>현재 생성된 방들</h1>';
@@ -71,8 +58,23 @@ app.get('/', function(req, res) {
 		}
 	});
 	resHtml += '<p><a href="javascript:location.reload();">새로고침</a></p>';
+	resHtml += '<p style="text-align:right;"><a href="/mon">방 만들기</a></p>';
 	res.end(resHtml);
+};
+['css', 'img', 'js'].forEach(function(dirName) {
+	app.use('/' + dirName, express.static(OUT_DIR + '/' + dirName));
 });
+app.get('/mon', sendMonitorHtml);
+app.get('/monitor', sendMonitorHtml);
+app.get('/:roomNum', function(req, res) {
+	var roomNum = req.params.roomNum;
+	if (roomNum && +roomNum >= 0) {
+		sendRemoteHtml(req, res);
+	} else {
+		res.send(404, '/' + roomNum + ' is Not Found.');
+	}
+});
+app.get('/', sendLobby);
 server.listen(89);
 
 
@@ -87,7 +89,7 @@ function getRoomNumByMonId(monId) {
 }
 
 function sendToMon(room, name, value) {
-	sockMap[room.monId].socket.emit(name, value);
+	sockMap[room.monId].emit(name, value);
 }
 
 function getRoomAndIndexByUserSockId(userSockId) {
@@ -112,24 +114,31 @@ function getRoomAndIndexByUserSockId(userSockId) {
 	}
 	return null;
 }
+function broadcastRoom(room, name, value) {
+	room.users.forEach(function (user) {
+		if (user.connected) {
+			sockMap[user.sockId].emit(name, value);
+		}
+	});
+}
 
 io.of('/tank').on('connection', function(socket) {
 	var sockId = socket.id;
-	console.log('connection', sockId);
-	sockMap[sockId] = {
-		sockId: sockId,
-		socket: socket
-	};
+	sockMap[sockId] = socket;
+	console.log(' - connection\n\t', sockId);
+	
 	socket.on('disconnect', function() {
-		console.log('disconnect', sockId);
+		console.log('- disconnect\n\t', sockId);
 		delete sockMap[sockId];
 		
-		var roomNum, roomAndIndex, room, i, len, user;
+		var roomNum, roomAndIndex, room;
+		
 		// mon 일 경우.
 		roomNum = getRoomNumByMonId(sockId);
 		if (roomNum > -1) {
+			broadcastRoom(roomArr[roomNum], 'tank_error', '방이 닫혔습니다. (게임 종료)');
 			roomArr[roomNum] = null;
-			socket.broadcast.to('room' + roomNum).emit('tank_error', '방이 닫혔습니다. (게임 종료)');
+			return;
 		}
 		
 		// user 일 경우.
@@ -137,28 +146,20 @@ io.of('/tank').on('connection', function(socket) {
 		if (roomAndIndex) {
 			room = roomAndIndex.room;
 			if (room.gaming) { // 게임중일 때는 user 에 connected=false 만 체크.
-				len = room.users.length;
-				for (i = 0; i < len; i += 1) {
-					user = room.users[i];
-					if (user.sockId === sockId) {
-						console.log(sockId, 'connected = false');
-						user.connected = false;
-					}
-				}
-				sendToMon(room, 'updateRoom', room);
-				console.log('exit when room.gaming', room.users);
+				room.users[roomAndIndex.index].connected = false;
+				console.log('exit from game room\n\t', room.users);
 			} else { // 게임중이 아닐 경우 user 에서 삭제.
 				room.users.splice(roomAndIndex.index, 1);
-				sendToMon(room, 'updateRoom', room);
-				socket.broadcast.to('room' + roomNum).emit('clear_ready');
-				console.log('exit when not room.gaming', room.users);
+				broadcastRoom(room, 'clear_ready');
+				console.log('exit from ready room\n\t', room.users);
 			}
+			sendToMon(room, 'updateRoom', room);
 		}
 	});
 	
 	// mon - 방 만들기
 	socket.on('createRoom', function(roomLimit) {
-		console.log(sockId, 'createRoom');
+		console.log(sockId, '\n\tcreateRoom');
 		var roomNum = roomArr.length;
 		roomArr[roomNum] = {
 			monId: sockId,
@@ -166,12 +167,11 @@ io.of('/tank').on('connection', function(socket) {
 			users: [],
 			userLimit: roomLimit
 		};
-		socket.join('room' + roomNum);
 		socket.emit('newRoom', roomNum);
 	});
 	// mon - HP
 	socket.on('hp', function(hpArr) {
-		console.log(sockId, 'hp', hpArr);
+		console.log(sockId, '\n\thp', hpArr);
 		var roomNum, users, len, i, user;
 		roomNum = getRoomNumByMonId(sockId);
 		if (roomNum > -1) {
@@ -179,15 +179,15 @@ io.of('/tank').on('connection', function(socket) {
 			len = users.length;
 			for (i = 0; i < len; i += 1) {
 				user = users[i];
-				if (sockMap[user.sockId]) {
-					sockMap[user.sockId].socket.emit('hp', hpArr[i]);
+				if (user.connected) {
+					sockMap[user.sockId].emit('hp', hpArr[i]);
 				}
 			}
 		}
 	});
 	// mon - 누구의 차례인가
 	socket.on('turn', function(info) {
-		console.log(sockId, 'turn', info);
+		console.log(sockId, '\n\tturn', info);
 		var turnIndex, hpArr, roomNum, users, len, i, user, waitTurn, tempTurnIndex;
 		turnIndex = info.turnIndex;
 		hpArr = info.hpArr;
@@ -197,7 +197,7 @@ io.of('/tank').on('connection', function(socket) {
 			len = users.length;
 			for (i = 0; i < len; i += 1) {
 				user = users[i];
-				if (sockMap[user.sockId]) {
+				if (user.connected) {
 					waitTurn = 0;
 					tempTurnIndex = turnIndex;
 					while (i !== tempTurnIndex) {
@@ -209,23 +209,25 @@ io.of('/tank').on('connection', function(socket) {
 							waitTurn += 1;
 						}
 					}
-					sockMap[user.sockId].socket.emit('waitTurnToMyTurn', waitTurn);
+					sockMap[user.sockId].emit('waitTurnToMyTurn', waitTurn);
 				}
 			}
 		}
 	});
 	// mon - 게임시작
 	socket.on('startGame', function() {
-		console.log(sockId, 'startGame');
-		var roomNum = getRoomNumByMonId(sockId);
+		console.log(sockId, '\n\tstartGame');
+		var roomNum, room;
+		roomNum = getRoomNumByMonId(sockId);
 		if (roomNum > -1) {
-			roomArr[roomNum].gaming = true;
-			socket.broadcast.to('room' + roomNum).emit('startGame');
+			room = roomArr[roomNum];
+			room.gaming = true;
+			broadcastRoom(room, 'startGame');
 		}
 	});
 	// TODO mon - 게임 끝
 	socket.on('endGame', function() {
-		console.log(sockId, 'endGame');
+		console.log(sockId, '\n\tendGame');
 		var roomNum, room, users, len, i;
 		roomNum = getRoomNumByMonId(sockId);
 		if (roomNum > -1) {
@@ -239,14 +241,14 @@ io.of('/tank').on('connection', function(socket) {
 				}
 			}
 			sendToMon(room, 'updateRoom', room);
-			socket.broadcast.to('room' + roomNum).emit('endGame');
-			socket.broadcast.to('room' + roomNum).emit('clear_ready');
+			broadcastRoom(room, 'endGame');
+			broadcastRoom(room, 'clear_ready');
 		}
 	});
 	
 	// remote - join
 	socket.on('join', function(userInfo) {
-		console.log(sockId, 'join', userInfo);
+		console.log(sockId, '\n\tjoin', userInfo);
 		var roomNum, room, tankIndex, roomAndIndex;
 		roomNum = userInfo.roomNum;
 		room = roomArr[roomNum];
@@ -262,6 +264,7 @@ io.of('/tank').on('connection', function(socket) {
 			socket.emit('tank_error', '현재 방이 꽉 찼습니다.');
 			return;
 		}
+		
 		tankIndex = room.users.length;
 		room.users.push({
 			sockId: sockId,
@@ -269,14 +272,11 @@ io.of('/tank').on('connection', function(socket) {
 			roomNum: userInfo.roomNum,
 			connected: true
 		});
-		socket.join('room' + roomNum);
 		sendToMon(room, 'updateRoom', room);
-		socket.broadcast.to('room' + roomNum).emit('clear_ready');
-		socket.emit('okRoom', {
-			roomNum: roomNum
-		});
+		broadcastRoom(room, 'clear_ready');
+		socket.emit('successJoin');
 	});
-	// remote - tank (angle, power, fire)
+	// remote - tank (angle, power, fire, ready)
 	socket.on('tank', function(data) {
 		var roomAndIndex = getRoomAndIndexByUserSockId(sockId);
 		if (roomAndIndex) {
@@ -286,10 +286,6 @@ io.of('/tank').on('connection', function(socket) {
 			});
 		}
 	});
-	// remote - ready
 });
-
-
-
 
 

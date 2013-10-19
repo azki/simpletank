@@ -2,7 +2,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml" lang="ko">
 	<head>
 		<meta http-equiv="content-type" content="application/xhtml+xml; charset=UTF-8" />
-		<title>Simple Tank : tank.azki.org</title>
+		<title>Simple Tank - azki.org:89</title>
 		<style type="text/css">		
 			html, body {
 			    margin: 0
@@ -71,10 +71,10 @@
 		</script>
 		<script type="text/javascript">
 /*global $,simpleTank,io4azki*/
-/*global ROOM_LIMIT*/
 "use strict";
 var COLOR_MAP = ["#f00", "#00f", "#ff0", "#f0f"];
 var ROOM_LIMIT = 4;
+var ROOM_NUM = 0;
 var map, tanks, shot;
 var readyArr = [];
 var countDownTimer = null;
@@ -112,8 +112,8 @@ $(function() {
 });
 
 function startFirstGame() {
-	var player, ui, reGameTimer;
-	player = new simpleTank.Player([{
+	var bgAiPlayer, ui, reGameTimer;
+	bgAiPlayer = new simpleTank.Player([{
 		type: "Ai04",
 		difficulty: 1,
 		color: "#f00",
@@ -138,39 +138,37 @@ function startFirstGame() {
 		name: "컴퓨터3",
 		team: 4
 	}]);
-	window.endGame = function() {
+	clearReGameTimer = function() {
 		if (reGameTimer) {
 			clearTimeout(reGameTimer);
 			reGameTimer = null;
 		}
+	};
+	window.endGame = function() {
+		clearReGameTimer();
 		map.newMapData();
 		map.redraw();
-		ui.newGame(player);
+		ui.newGame(bgAiPlayer);
 		ui.nextPlayer();
 		startReadyRoom();
 		socket.emit("endGame");
 	};
 	reGameTimer = null;
-	ui = new simpleTank.Ui(map, tanks, shot, player, function(result) {
+	ui = new simpleTank.Ui(map, tanks, shot, bgAiPlayer, function(result) {
 		if (result.type === "turnLost") {
-			//TODO game over.
-			console.log("### turnLost", isGameStarted, result);
+			console.log("game over turnLost", isGameStarted, result);
 			if (isGameStarted) {
 				isGameStarted = false;
 				if (result.isDraw) {
 					$("#message").html('<p>무승부</p>')
 					.css("display", "inline-block").removeClass().addClass("animated bounceInDown");
-				}
-				else {
+				} else {
 					var turnIndex = result.turnIndex;
 					$("#message").html('<p><b>승리!!</b><h1 style="color:' + COLOR_MAP[turnIndex] + '">' + tankUi.getNickName(turnIndex) + '</h1></p>')
 					.css("display", "inline-block").removeClass().addClass("animated bounceInDown");
 				}
 			}
-			if (reGameTimer) {
-				clearTimeout(reGameTimer);
-				reGameTimer = null;
-			}
+			clearReGameTimer();
 			reGameTimer = setTimeout(endGame, 1000 * 7);
 		}
 	});
@@ -182,16 +180,18 @@ function startFirstGame() {
 
 function onNewTurn(turnIndex) {
 	console.log("onNewTurn", isGameStarted, turnIndex);
+	//TODO display HP.
+	console.log("tankUi.getHpArr()", tankUi.getHpArr());
 	if (isGameStarted === false) {
 		return;
 	}
-	console.log("tankUi.getHpArr()", tankUi.getHpArr());
 	socket.emit("hp", tankUi.getHpArr());
+	
 	var tankUser = tankUsers[turnIndex];
-	if (tankUser && tankUser.connected === false) {
-		console.log("die", turnIndex);
+	if (tankUser && tankUser.connected === false) { // 여기는 발생하지 않아야 함.
 		tankUi.die(turnIndex);
 		tankUi.nextPass();
+		console.error("### onNewTurn - die", turnIndex);
 	} else {
 		socket.emit("turn", {
 			hpArr: tankUi.getHpArr(),
@@ -224,8 +224,8 @@ function startTankGame() {
 	}
 	player = new simpleTank.Player(playerArr);
 	tankUi.newGame(player);
-	socket.emit("startGame");
 	isGameStarted = true;
+	socket.emit("startGame");
 	tankUi.nextPlayer();
 }
 
@@ -274,7 +274,6 @@ function readyCheck() {
 	}
 }
 
-var ROOM_NUM = 0;
 var hideRoomMessageTimer = null;
 function cancelHideRoomMessageTimer() {
 	if (hideRoomMessageTimer) {
@@ -298,6 +297,7 @@ function hideRoomMessage() {
 		cancelHideRoomMessageTimer();
 	}, 2000);
 }
+
 function cancelCountDown() {
 	if (countDownTimer != null) {
 		clearInterval(countDownTimer);
@@ -320,6 +320,7 @@ function startCountDown() {
 		}
 	}, 1000);
 }
+
 var hideUserTableTimer = null;
 function cancelHideUserTableTimer() {
 	if (hideUserTableTimer) {
@@ -342,6 +343,7 @@ function hideUserTable() {
 		cancelHideUserTableTimer();
 	}, 2000);
 }
+
 var socket;
 function initSock() {
 	socket = io4azki.connect("/tank");
@@ -368,10 +370,7 @@ function initSock() {
 	socket.on("set_fire", function(data) {
 		console.log("set_fire", data);
 		if (tankUi.getTurnIndex() === data.tankIndex) {
-			tankUi.fire(data.value, function() {
-				//TODO send nextTurn to server.
-				//console.log('TODO nextTurn');
-			});
+			tankUi.fire(data.value);
 		}
 	});
 	socket.on("set_ready", function(data) {
@@ -385,12 +384,14 @@ function initSock() {
 		if (isGameStarted) {
 			// TODO 누가 접속이 끊어졌는지 Toast??
 			// 현재 해당 턴의 탱크면 패스하게.
-			var turnIndex, tankUser;
+			var turnIndex, tankUser, len, i;
+			len = tankUsers.length;
 			turnIndex = tankUi.getTurnIndex();
-			tankUser = tankUsers[turnIndex];
-			if (tankUser && tankUser.connected === false) {
-				tankUi.die(turnIndex);
-				tankUi.nextPass();
+			for (i = 0; i < len; i += 1) {
+				tankUser = tankUsers[i];
+				if (tankUser.connected === false) {
+					tankUi.die(i);
+				}
 			}
 		} else {
 			readyArr = [];
