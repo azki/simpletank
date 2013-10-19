@@ -80,10 +80,14 @@ simpleTank.Ui.prototype = {
 		this.drawPinWheel();
 	},
 	die: function(tankIndex) {
-		this.tanks.getTank(tankIndex).hp = 0;
-		this.tanks.redraw();
+		var tank, thisTurn;
+		tank = this.tanks.getTank(tankIndex);
+		if (tank.hp > 0) {
+			tank.hp = 0;
+			this.tanks.redraw();
+		}
 		if (this.shootable) {
-			var thisTurn = this.getTurnIndex();
+			thisTurn = this.getTurnIndex();
 			if (thisTurn === tankIndex) {
 				this.passTurn();
 			}

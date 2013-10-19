@@ -139,7 +139,7 @@ window.onload = function() {
 	var isReady = false;
 	var socket = io4azki.connect("/tank");
 	socket.on("connect", function() {
-		console.log("connect");
+		//console.log("connect");
 		$("#status").html("접속 중입니다...");
 		socket.emit("join", {
 			nickName: nickName,
@@ -147,14 +147,14 @@ window.onload = function() {
 		});
 	});
 	socket.on("disconnect", function() {
-		console.log("disconnect");
+		//console.log("disconnect");
 		$("#status").html("접속이 끊어졌어요ㅠㅠ");
 		isRoom = false;
 		$("#readyRoomUi").hide();
 		$("#gameRoomUi").hide();
 	});
 	socket.on("successJoin", function() {
-		console.log("successJoin");
+		//console.log("successJoin");
 		$("#status").html(ROOM_NUM + "번 방 대기실");
 		isRoom = true;
 		sendAngle();
@@ -162,17 +162,17 @@ window.onload = function() {
 		showReadyRoom();
 	});
 	socket.on("tank_error", function(msg) {
-		console.log("tank_error", msg);
+		//console.log("tank_error", msg);
 		$("#status").html('<span style="color:#f44">Error: ' + msg + '</span>');
 		isRoom = false;
 	});
 	socket.on("clear_ready", function() {
-		console.log("clear_ready");
+		//console.log("clear_ready");
 		isReady = false;
 		$("#ready").css("background-color", isReady ? "yellow" : "");
 	});
 	socket.on("startGame", function() {
-		console.log("startGame");
+		//console.log("startGame");
 		$("#status").html("게임이 시작되었습니다.");
 		isRoom = true;
 		isMyTurn = false;
@@ -182,7 +182,7 @@ window.onload = function() {
 		showGameRoom();
 	});
 	socket.on("waitTurnToMyTurn", function(waitTurn) {
-		console.log("waitTurnToMyTurn", waitTurn);
+		//console.log("waitTurnToMyTurn", waitTurn);
 		if (myHp <= 0) {
 			$("#status").html("사망하셨습니다.");
 			isMyTurn = false;
@@ -197,14 +197,14 @@ window.onload = function() {
 		sendPower();
 	});
 	socket.on("endGame", function() {
-		console.log("endGame");
+		//console.log("endGame");
 		$("#status").html(ROOM_NUM + "번 방 대기실");
 		isRoom = true;
 		isMyTurn = false;
 		showReadyRoom();
 	});
 	socket.on("hp", function(hp) {
-		console.log("hp", hp);
+		//console.log("hp", hp);
 		myHp = hp;
 		if (hp > 0) {
 			$("#hp").text(hp);
@@ -213,6 +213,7 @@ window.onload = function() {
 		}
 	});
 	
+	//TODO angle 은 타이머로 제한하자.
 	function sendAngle() {
 		if (isRoom) {
 			socket.emit("tank", {
@@ -222,6 +223,7 @@ window.onload = function() {
 		}
 	}
 	
+	//TODO Power 는 타이머로 제한하자.
 	function sendPower() {
 		if (isRoom) {
 			socket.emit("tank", {

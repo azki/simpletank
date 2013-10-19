@@ -147,18 +147,18 @@ function startFirstGame() {
 	};
 	window.endGame = function() {
 		clearReGameTimer();
+		//bg ai play
 		map.newMapData();
 		map.redraw();
 		ui.newGame(bgAiPlayer);
 		ui.nextPlayer();
+		//ready room
 		startReadyRoom();
-		socket.emit("endGame");
 	};
 	ui = new simpleTank.Ui(map, tanks, shot, bgAiPlayer, function(result) {
 		if (result.type === "turnLost") {
 			console.log("game over turnLost", isGameStarted, result);
 			if (isGameStarted) {
-				isGameStarted = false;
 				if (result.isDraw) {
 					$("#message").html('<p>무승부</p>')
 					.css("display", "inline-block").removeClass().addClass("animated bounceInDown");
@@ -167,6 +167,8 @@ function startFirstGame() {
 					$("#message").html('<p><b>승리!!</b><h1 style="color:' + COLOR_MAP[turnIndex] + '">' + tankUi.getNickName(turnIndex) + '</h1></p>')
 					.css("display", "inline-block").removeClass().addClass("animated bounceInDown");
 				}
+				isGameStarted = false;
+				socket.emit("endGame");
 			}
 			clearReGameTimer();
 			reGameTimer = setTimeout(endGame, 1000 * 7);
@@ -353,6 +355,7 @@ function initSock() {
 	socket.on("disconnect", function() {
 		hideRoomMessage();
 		hideUserTable();
+		console.error("disconnected");
 	});
 	socket.on("newRoom", function(roomNum) {
 		ROOM_NUM = roomNum;
@@ -375,8 +378,10 @@ function initSock() {
 	});
 	socket.on("set_ready", function(data) {
 		console.log("set_ready", data);
-		readyArr[data.tankIndex] = data.value;
-		readyCheck();
+		if (isGameStarted === false) {
+			readyArr[data.tankIndex] = data.value;
+			readyCheck();
+		}
 	});
 	socket.on("updateRoom", function(room) {
 		console.log("updateRoom", room);
