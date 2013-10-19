@@ -356,9 +356,9 @@ function initSock() {
 		socket.emit("createRoom", ROOM_LIMIT);
 	});
 	socket.on("disconnect", function() {
-		hideRoomMessage();
 		hideUserTable();
-		console.error("disconnected");
+		$("#message").html('<h1>disconnected T.T</h1>')
+		.css("display", "inline-block").removeClass().addClass("animated bounceInDown");
 	});
 	socket.on("newRoom", function(roomNum) {
 		ROOM_NUM = roomNum;
@@ -366,15 +366,22 @@ function initSock() {
 		startReadyRoom();
 	});
 	socket.on("set_angle", function(data) {
-		//console.log("set_angle", data);
+		if (isGameStarted === false) {
+			return;
+		}
 		tankUi.setAngle(data.tankIndex, data.value);
 	});
 	socket.on("set_power", function(data) {
-		//console.log("set_power", data);
+		if (isGameStarted === false) {
+			return;
+		}
 		tankUi.setPower(data.tankIndex, data.value);
 	});
 	socket.on("set_fire", function(data) {
 		console.log("set_fire", data);
+		if (isGameStarted === false) {
+			return;
+		}
 		if (tankUi.getTurnIndex() === data.tankIndex) {
 			tankUi.fire(data.value);
 		}

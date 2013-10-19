@@ -62,7 +62,9 @@
 				<div id="nickNamePanel" class="r-panel ui-body-c" data-role="fieldcontain">
 					<label for="nickName">
 						nick name:
-					</label>&nbsp;<input type="text" name="nickName" id="nickName" value="" />
+					</label>&nbsp;<input type="text" name="nickName" id="nickName" maxlength="8" value="" />
+					<br/>
+					변경 후 재접속해야 적용됩니다.
 				</div>
 				<div id="readyPanel" class="r-panel ui-body-c" data-role="fieldcontain">
 					<button id="ready" type="button">
@@ -109,10 +111,23 @@ window.onload = function() {
 	var nickName = localStorage.getItem("nickName");
 	if (!nickName) {
 		nickName = prompt("닉네임을 입력하세요", "");
+		if (nickName && nickName.substr) {
+			nickName = nickName.substr(0, 8);
+		}
 		localStorage.setItem("nickName", nickName);
 	}
 	$("#nickName").val(nickName);
 	$("#myNick").text(nickName);
+	var nickNameChangeFn = function () {
+		nickName = $(this).val();
+		if (nickName && nickName.substr) {
+			nickName = nickName.substr(0, 8);
+		}
+		localStorage.setItem("nickName", nickName);
+		$("#myNick").text(nickName);
+	};
+	$("#nickName").change(nickNameChangeFn);
+	$("#nickName").keyup(nickNameChangeFn);
 	
 	//init room number.
 	(function() {
@@ -157,14 +172,12 @@ window.onload = function() {
 		//console.log("successJoin");
 		$("#status").html(ROOM_NUM + "번 방 대기실");
 		isRoom = true;
-		sendAngle();
-		sendPower();
 		showReadyRoom();
 	});
 	socket.on("tank_error", function(msg) {
 		//console.log("tank_error", msg);
-		$("#status").html('<span style="color:#f44">Error: ' + msg + '</span>');
 		isRoom = false;
+		$("#status").html('<span style="color:#f44">Error: ' + msg + '</span>');
 	});
 	socket.on("clear_ready", function() {
 		//console.log("clear_ready");
@@ -173,13 +186,16 @@ window.onload = function() {
 	});
 	socket.on("startGame", function() {
 		//console.log("startGame");
-		$("#status").html("게임이 시작되었습니다.");
-		isRoom = true;
 		isMyTurn = false;
+		$("#status").html("게임이 시작되었습니다.");
+		
 		myHp = 100;
 		remainDoubleShotCount = 2;
 		$("#remainDoubleShot").text(remainDoubleShotCount);
 		showGameRoom();
+		
+		sendAngle();
+		sendPower();
 	});
 	socket.on("waitTurnToMyTurn", function(waitTurn) {
 		//console.log("waitTurnToMyTurn", waitTurn);
@@ -193,14 +209,15 @@ window.onload = function() {
 			$("#status").html(waitTurn + "턴 후 차례가 돌아옵니다.");
 			isMyTurn = false;
 		}
+		
 		sendAngle();
 		sendPower();
 	});
 	socket.on("endGame", function() {
 		//console.log("endGame");
-		$("#status").html(ROOM_NUM + "번 방 대기실");
-		isRoom = true;
 		isMyTurn = false;
+		$("#status").html(ROOM_NUM + "번 방 대기실");
+		
 		showReadyRoom();
 	});
 	socket.on("hp", function(hp) {
@@ -213,7 +230,6 @@ window.onload = function() {
 		}
 	});
 	
-	//TODO angle 은 타이머로 제한하자.
 	function sendAngle() {
 		if (isRoom) {
 			socket.emit("tank", {
@@ -223,7 +239,6 @@ window.onload = function() {
 		}
 	}
 	
-	//TODO Power 는 타이머로 제한하자.
 	function sendPower() {
 		if (isRoom) {
 			socket.emit("tank", {
@@ -234,6 +249,8 @@ window.onload = function() {
 	}
 	
 	function sendFire(fireType) {
+		sendAngle();
+		sendPower();
 		if (isRoom) {
 			socket.emit("tank", {
 				name: "fire",
@@ -243,8 +260,25 @@ window.onload = function() {
 		}
 	}
 	
-	$("#angleSlider").change(sendAngle);
-	$("#powerSlider").change(sendPower);
+	var isChangedAngle = false;
+	var isChangedPower = false;
+	$("#angleSlider").change(function () {
+		isChangedAngle = true;
+	});
+	$("#powerSlider").change(function () {
+		isChangedPower = true;
+	});
+	setInterval(function () {
+		if (isChangedAngle) {
+			isChangedAngle = false;
+			sendAngle();
+		}
+		if (isChangedPower) {
+			isChangedPower = false;
+			sendPower();
+		}
+	}, 500);
+	
 	$("#move,#shot").click(function() {
 		if (isMyTurn === false) {
 			return;
