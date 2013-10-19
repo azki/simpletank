@@ -32,7 +32,6 @@ simpleTank.Ui.prototype = {
 			this.player.stopAi();
 		}
 		this.player = player;
-		this.tank = null;
 		tanks.initTanks(player);
 		tanks.redraw();
 		
@@ -45,13 +44,10 @@ simpleTank.Ui.prototype = {
 		player.initAi({
 			obj: this,
 			redraw: function() {
-				this.setTurnTank();
 				this.tanks.redraw();
 			},
 			shoot: this.shoot
 		}, this.map, tanks);
-		this.drawTankHp();
-		this.setTurnTank();
 	},
 	nextPlayer: function() {
 		var player, tanks, turn, tank, playerType;
@@ -79,15 +75,22 @@ simpleTank.Ui.prototype = {
 				});
 			}
 		}
+		this.drawTankHp();
+		this.drawThisTurnTank();
 		this.drawPinWheel();
 	},
 	die: function(tankIndex) {
 		this.tanks.getTank(tankIndex).hp = 0;
+		this.tanks.redraw();
+		if (this.shootable) {
+			var thisTurn = this.getTurnIndex();
+			if (thisTurn === tankIndex) {
+				this.passTurn();
+			}
+		}
 	},
-	nextPass: function () {
+	passTurn: function () {
 		this.tanks.passTurn();
-		this.drawTankHp();
-		this.setTurnTank();
 		this.nextPlayer();
 	},
 	getHpArr: function () {
@@ -126,27 +129,23 @@ simpleTank.Ui.prototype = {
 		tanks = this.tanks;
 		len = tanks.count;
 		for (i = 0; i < len; i += 1) {
+			//TODO 자기 턴이 아닌 애들만 좌표 가져와 상단에 닉네임과 HP 표시.
 			tank = tanks.getTank(i);
 			hp = tank.hp;
-			if (hp <= 0) {
-				hp = 0;
-			}
-			$("#player" + i + "hpBar").width(hp * 3).children(0).text(tank.name + " (hp: " + hp + ")");
 		}
 	},
-	setTurnTank: function() {
-		var tank, powerValue;
-		tank = this.tank = this.tanks.getTurnTank();
+	drawThisTurnTank: function() {
+		var tank;
+		tank = this.tanks.getTurnTank();
 		if (tank !== null) {
-			powerValue = Math.round(tank.power * 100);
-			$("#angleValue").val(tank.angle);
-			$("#powerValue").val(powerValue);
+			//TODO 이번에 턴이 된 탱크에 화살표 몇초간 표시.
+			//TODO. tank 위치 가져와서 몇초간 화살표 표시..
 		}
 	},
 	/**
 	 * @deprecated
 	 */
-	initEvent: function() {
+	deprecatedInitEvent: function() {
 		var thisP;
 		thisP = this;
 		$("#canvasPanel").click(function(e) {
@@ -163,38 +162,6 @@ simpleTank.Ui.prototype = {
 				thisP.setAngle(thisP.tanks.turn, angle);
 			}
 		});
-		$(document).keydown(function(e) {
-			var keyValue;
-			if (thisP.shootable && e.shift !== true && e.ctrl !== true) {
-				keyValue = e.keyCode;
-				switch (keyValue) {
-				case 70://f
-					thisP.shootFromEvent({
-						type: "fire"
-					});
-					break;
-				case 86://v
-					thisP.shootFromEvent({
-						type: "move"
-					});
-					break;
-				case 66://b
-					if (0 < thisP.tank.doubleShot) {
-						thisP.shootFromEvent({
-							type: "doubleShot"
-						});
-					}
-					break;
-				}
-			}
-		});
-	},
-	/**
-	 * @deprecated
-	 */
-	shootFromEvent: function(option) {
-		this.shootable = false;
-		this.shoot(option, null);
 	},
 	shoot: function(option, callback) {
 		var thisP, tanks, shot;
@@ -208,9 +175,9 @@ simpleTank.Ui.prototype = {
 		}
 		shot.initShot(option);
 		shot.shoot(function(result) {
+			console.log('shoot result: ', result);
+			// TODO 데미지 표시?
 			tanks.passTurn();
-			thisP.drawTankHp();
-			thisP.setTurnTank();
 			thisP.nextPlayer();
 			if (callback) {
 				callback(result);
