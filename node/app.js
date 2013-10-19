@@ -254,14 +254,17 @@ io.of('/tank').on('connection', function(socket) {
 		room = roomArr[roomNum];
 		if (!room) {
 			socket.emit('tank_error', '방이 존재하지 않습니다.');
+			console.log(sockId, '\n\tFail Join because No Room.');
 			return;
 		}
 		if (room.gaming === true) {
 			socket.emit('tank_error', '현재 게임이 진행중입니다. 게임이 끝난 후 입장 가능합니다.');
+			console.log(sockId, '\n\tFail Join because Already Game.');
 			return;
 		}
 		if (room.users.length >= room.userLimit) {
 			socket.emit('tank_error', '현재 방이 꽉 찼습니다.');
+			console.log(sockId, '\n\tFail Join because Full Room.');
 			return;
 		}
 		
@@ -275,6 +278,7 @@ io.of('/tank').on('connection', function(socket) {
 		sendToMon(room, 'updateRoom', room);
 		broadcastRoom(room, 'clear_ready');
 		socket.emit('successJoin');
+		console.log(sockId, '\n\tSuccess Join.');
 	});
 	// remote - tank (angle, power, fire, ready)
 	socket.on('tank', function(data) {

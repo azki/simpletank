@@ -112,7 +112,7 @@ $(function() {
 });
 
 function startFirstGame() {
-	var bgAiPlayer, ui, reGameTimer;
+	var bgAiPlayer, ui, reGameTimer, clearReGameTimer;
 	bgAiPlayer = new simpleTank.Player([{
 		type: "Ai04",
 		difficulty: 1,
@@ -138,6 +138,7 @@ function startFirstGame() {
 		name: "컴퓨터3",
 		team: 4
 	}]);
+	reGameTimer = null;
 	clearReGameTimer = function() {
 		if (reGameTimer) {
 			clearTimeout(reGameTimer);
@@ -153,7 +154,6 @@ function startFirstGame() {
 		startReadyRoom();
 		socket.emit("endGame");
 	};
-	reGameTimer = null;
 	ui = new simpleTank.Ui(map, tanks, shot, bgAiPlayer, function(result) {
 		if (result.type === "turnLost") {
 			console.log("game over turnLost", isGameStarted, result);
