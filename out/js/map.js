@@ -42,7 +42,7 @@ simpleTank.Map.prototype = {
 		}
 	},
 	rndWind: function() {
-		if (Math.random() < 0.2) {
+		if (Math.random() < 0.1) {
 			this.wind = Math.floor(Math.random() * 5) - 2;
 			this.redraw();
 		}
