@@ -28,6 +28,7 @@ simpleTank.Shot.prototype = {
 		this.callback = null;
 		this.shotOption = null;
 		this.timer = null;
+		this.timer2 = null;
 		this.particles = [];
 	},
 	initShot: function(option) {
@@ -66,20 +67,19 @@ simpleTank.Shot.prototype = {
 		this.shotOption = option ? option : {};
 	},
 	shoot: function(callback) {
-		var timerFn, thisP, drawDelay, loop, loopPerFrame, wind, gravity, beforeDate, isTest;
+		var timerFn, thisP, drawDelay, wind, gravity, isTest, forSkipNum, skipStep;
 		if (callback) {
 			this.callback = callback;
 		}
 		thisP = this;
-		drawDelay = 13;
-		loop = 0;
-		loopPerFrame = 5;
+		drawDelay = 20;
+		skipStep = 20;
 		wind = this.map.wind * 0.05;
 		gravity = 0.001;
-		beforeDate = new Date();
 		this.shooting = true;
 		this.explosion = false;
 		isTest = this.shotOption.type === "test";
+		forSkipNum = 0;
 		timerFn = function() {
 			thisP.x += thisP.speedX;
 			thisP.x += wind;
@@ -89,14 +89,14 @@ simpleTank.Shot.prototype = {
 				thisP.hit();
 				thisP.timer = null;
 			} else {
-				loop += 1;
-				if (isTest === false && loop % loopPerFrame === 0) {
-					if (loopPerFrame < 100 && 2 < Math.round(((new Date()) - beforeDate) / loopPerFrame)) {
-						loopPerFrame += 5;
+				if (isTest === false) {
+					forSkipNum += 1;
+					if (forSkipNum % skipStep !== 0) {
+						timerFn();
+					} else {
+						thisP.redraw();
+						thisP.timer = setTimeout(timerFn, drawDelay);
 					}
-					beforeDate = new Date();
-					thisP.redraw();
-					thisP.timer = setTimeout(timerFn, drawDelay);
 				} else {
 					timerFn();
 				}
@@ -111,6 +111,11 @@ simpleTank.Shot.prototype = {
 	stop: function() {
 		if (this.timer !== null) {
 			clearTimeout(this.timer);
+			this.timer = null;
+		}
+		if (this.timer2 !== null) {
+			clearTimeout(this.timer2);
+			this.timer2 = null;
 		}
 	},
 	isHit: function() {
@@ -187,12 +192,12 @@ simpleTank.Shot.prototype = {
 			}
 			thisP.redraw(); // update and draw particles
 		}, 20);
-		this.timer = setTimeout(function() {
-			thisP.timer = null;
+		this.timer2 = setTimeout(function() {
 			thisP.redraw();
 			thisP.damage();
 			thisP.dig();
-			thisP.timer = setTimeout(function() {
+			thisP.timer2 = setTimeout(function() {
+				thisP.timer2 = null;
 				thisP.processAfterShoot();
 			}, BOMB_DELAY - 200);
 		}, 200);

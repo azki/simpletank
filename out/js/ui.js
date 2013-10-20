@@ -16,10 +16,12 @@ simpleTank.Ui.prototype = {
 		this.shot = shot;
 		this.callback = callback || null;
 		this.thisMyTurnTimer = null;
-		//this.initEvent();
+		
 		this.newGame(player);
 	},
 	newGame: function(player) {
+		this.clearThisMyTurnTimer();
+		
 		var map, tanks, shot;
 		map = this.map;
 		tanks = this.tanks;
@@ -158,7 +160,7 @@ simpleTank.Ui.prototype = {
 	},
 	clearThisMyTurnTimer: function() {
 		if (this.thisMyTurnTimer) {
-			clearTimeout(thisMyTurnTimer);
+			clearTimeout(this.thisMyTurnTimer);
 			this.thisMyTurnTimer = null;
 		}
 	},
@@ -173,7 +175,7 @@ simpleTank.Ui.prototype = {
 				top: tank.y - 64 - tank.tankSize * 3,
 				left: tank.x - 32
 			}).removeClass().addClass("animated bounceInDown");
-			setTimeout(function () {
+			this.thisMyTurnTimer = setTimeout(function () {
 				thisP.clearThisMyTurnTimer();
 				$("#thisIsMyTurn").hide();
 			}, 4000);

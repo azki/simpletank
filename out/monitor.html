@@ -5,7 +5,7 @@
 		<title>Simple Tank - azki.org:89</title>
 		<style type="text/css">		
 			html, body {
-			    margin: 0
+			    margin: 0;
 			}
 			
 			#message {
@@ -36,7 +36,6 @@
 				font-size:28pt;
 				color:#D8CAA8;
 			}
-			
 		</style>
 		<link rel="stylesheet" href="./css/animate-wind.css"/>
 		<link rel="stylesheet" href="./css/animate-custom.css"/>
@@ -81,6 +80,7 @@ $(function() {
 	var mapWidth, mapHeight, i, cvmap, cvtank, cvshot, mapCtx, tankCtx, shotCtx;
 	mapWidth = innerWidth;
 	mapHeight = innerHeight;
+	$("#elemUiPanel").width(mapWidth).height(mapHeight);
 	$("#canvasPanel").width(mapWidth).height(mapHeight);
 	$("#canvasPanel>canvas").attr("width", mapWidth).attr("height", mapHeight);
 	cvmap = $("#cvmap").get(0);
@@ -118,19 +118,19 @@ function startFirstGame() {
 	var bgAiPlayer, ui;
 	bgAiPlayer = new simpleTank.Player([{
 		type: "Ai04",
-		difficulty: 1,
+		difficulty: 4,
 		color: "#f00",
 		name: "컴퓨터0",
 		team: 1
 	}, {
 		type: "Ai04",
-		difficulty: 4,
+		difficulty: 6,
 		color: "#00f",
 		name: "컴퓨터1",
 		team: 2
 	}, {
 		type: "Ai04",
-		difficulty: 7,
+		difficulty: 8,
 		color: "#ff0",
 		name: "컴퓨터2",
 		team: 3
@@ -143,18 +143,17 @@ function startFirstGame() {
 	}]);
 	window.endGame = function() {
 		clearReGameTimer();
-		//end game
-		if (isGameStarted) {
-			isGameStarted = false;
-			socket.emit("endGame");
-		}
 		//bg ai play
 		map.newMapData();
 		map.redraw();
 		ui.newGame(bgAiPlayer);
 		ui.nextPlayer();
-		//ready room
-		startReadyRoom();
+		//end game
+		if (isGameStarted) {
+			isGameStarted = false;
+			socket.emit("endGame");
+			startReadyRoom();
+		}
 	};
 	ui = new simpleTank.Ui(map, tanks, shot, bgAiPlayer, function(result) {
 		if (result.type === "turnLost") {
@@ -427,24 +426,26 @@ function initSock() {
 			<img id="pinWheel" src="img/pinwheel.png" style="position:absolute;top:10px;left:95px;"/>
 		</div>
 		
-		<div id="tankInfo3" class="tank-info" style="position:absolute; width:128px; display:none; text-align:center;">
-			<span class="tank-name" style="font-size:larger; font-weight:bold;">닉네임</span><br/>
-			(<span class="tank-hp">100</span>)
+		<div id="elemUiPanel" style="position:absolute; overflow:hidden;">
+			<div id="tankInfo3" class="tank-info" style="position:absolute; width:128px; display:none; text-align:center;">
+				<span class="tank-name" style="font-size:larger; font-weight:bold;">닉네임</span><br/>
+				(<span class="tank-hp">100</span>)
+			</div>
+			<div id="tankInfo2" class="tank-info" style="position:absolute; width:128px; display:none; text-align:center;">
+				<span class="tank-name" style="font-size:larger; font-weight:bold;">닉네임</span><br/>
+				(<span class="tank-hp">100</span>)
+			</div>
+			<div id="tankInfo1" class="tank-info" style="position:absolute; width:128px; display:none; text-align:center;">
+				<span class="tank-name" style="font-size:larger; font-weight:bold;">닉네임</span><br/>
+				(<span class="tank-hp">100</span>)
+			</div>
+			<div id="tankInfo0" class="tank-info" style="position:absolute; width:128px; display:none; text-align:center;">
+				<span class="tank-name" style="font-size:larger; font-weight:bold;">닉네임</span><br/>
+				(<span class="tank-hp">100</span>)
+			</div>
+			
+			<img id="thisIsMyTurn" style="position:absolute; display:none; width:64px; height:64px;" src="img/downarrow.png"/>
 		</div>
-		<div id="tankInfo2" class="tank-info" style="position:absolute; width:128px; display:none; text-align:center;">
-			<span class="tank-name" style="font-size:larger; font-weight:bold;">닉네임</span><br/>
-			(<span class="tank-hp">100</span>)
-		</div>
-		<div id="tankInfo1" class="tank-info" style="position:absolute; width:128px; display:none; text-align:center;">
-			<span class="tank-name" style="font-size:larger; font-weight:bold;">닉네임</span><br/>
-			(<span class="tank-hp">100</span>)
-		</div>
-		<div id="tankInfo0" class="tank-info" style="position:absolute; width:128px; display:none; text-align:center;">
-			<span class="tank-name" style="font-size:larger; font-weight:bold;">닉네임</span><br/>
-			(<span class="tank-hp">100</span>)
-		</div>
-		
-		<img id="thisIsMyTurn" style="position:absolute; display:none; width:64px; height:64px;" src="img/downarrow.png"/>
 		
 		<div style="position: absolute; width:100%; text-align:center;">
 			<div id="message" style="position:relative; display:none;"></div>
