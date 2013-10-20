@@ -38,7 +38,7 @@ simpleTank.Ui.prototype = {
 		
 		shot.stop();
 		shot.initShot({
-			type: "temp"
+			type: "test"
 		});
 		shot.redraw();
 		
@@ -129,14 +129,31 @@ simpleTank.Ui.prototype = {
 			}, 1);
 		}
 	},
+	clearTankHp: function() {
+		$(".tank-info").hide();
+	},
 	drawTankHp: function() {
-		var i, len, tanks, tank, hp;
+		this.clearTankHp();
+		
+		var i, len, tanks, tank, $tankInfo;
 		tanks = this.tanks;
 		len = tanks.count;
 		for (i = 0; i < len; i += 1) {
-			//TODO 자기 턴이 아닌 애들만 좌표 가져와 상단에 닉네임과 HP 표시.
+			if (i === tanks.turn) {
+				continue;
+			}
 			tank = tanks.getTank(i);
-			hp = tank.hp;
+			$tankInfo = $("#tankInfo" + i);
+			$tankInfo.css({
+				display: "inline-block",
+				top: tank.y - 64 - tank.tankSize * 2,
+				left: tank.x - 64
+			});
+			$tankInfo.find(".tank-name").text(tank.name).css({
+				color: tank.hp > 0 ? tank.color : "#000",
+				"text-decoration": tank.hp > 0 ? "" : "line-through"
+			});
+			$tankInfo.find(".tank-hp").text(tank.hp);
 		}
 	},
 	clearThisMyTurnTimer: function() {
@@ -193,6 +210,7 @@ simpleTank.Ui.prototype = {
 				option.type = "shot";
 			}
 		}
+		this.clearTankHp();
 		shot.initShot(option);
 		shot.shoot(function(result) {
 			console.log('shoot result: ', result);
