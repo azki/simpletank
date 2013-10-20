@@ -279,6 +279,8 @@ function readyCheck() {
 	}
 }
 
+///////////////////////////////////////////////////////////////////////////////////////////
+
 var hideRoomMessageTimer = null;
 function cancelHideRoomMessageTimer() {
 	if (hideRoomMessageTimer) {
@@ -348,6 +350,8 @@ function hideUserTable() {
 		cancelHideUserTableTimer();
 	}, 2000);
 }
+
+/////////////////////////////////////////////////////////////////////////////////////////
 
 var socket;
 function initSock() {
@@ -424,6 +428,9 @@ function initSock() {
 			<canvas id="cvshot" style="position:absolute;"></canvas>
 			<img id="pinWheel" src="img/pinwheel.png" style="position:absolute;top:10px;left:95px;"/>
 		</div>
+		
+		<img id="thisIsMyTurn" style="width:64px; height:64px; position:absolute; display:inline-block;" src="img/downarrow.png"/>
+		
 		<div style="position: absolute; width:100%; text-align:center;">
 			<div id="message" style="position:relative; display:none;"></div>
 			<br/>
@@ -452,6 +459,5 @@ function initSock() {
 				</td>
 			</tr></table>
 		</div>
-		<div id="thisIsMyTurn" style="position:absolute; display:none;"></div>
 	</body>
 </html>

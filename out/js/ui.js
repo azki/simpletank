@@ -15,6 +15,7 @@ simpleTank.Ui.prototype = {
 		this.tanks = tanks;
 		this.shot = shot;
 		this.callback = callback || null;
+		this.thisMyTurnTimer = null;
 		//this.initEvent();
 		this.newGame(player);
 	},
@@ -138,12 +139,27 @@ simpleTank.Ui.prototype = {
 			hp = tank.hp;
 		}
 	},
+	clearThisMyTurnTimer: function() {
+		if (this.thisMyTurnTimer) {
+			clearTimeout(thisMyTurnTimer);
+			this.thisMyTurnTimer = null;
+		}
+	},
 	drawThisTurnTank: function() {
-		var tank;
+		var thisP, tank;
+		thisP = this;
 		tank = this.tanks.getTurnTank();
 		if (tank !== null) {
-			//TODO 이번에 턴이 된 탱크에 화살표 몇초간 표시.
-			//TODO. tank 위치 가져와서 몇초간 화살표 표시..
+			this.clearThisMyTurnTimer();
+			$("#thisIsMyTurn").css({
+				display: "inline-block",
+				top: tank.y - 64 - tank.tankSize * 3,
+				left: tank.x - 32
+			}).removeClass().addClass("animated bounceInDown");
+			setTimeout(function () {
+				thisP.clearThisMyTurnTimer();
+				$("#thisIsMyTurn").hide();
+			}, 4000);
 		}
 	},
 	/**

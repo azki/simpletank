@@ -76,7 +76,7 @@ app.get('/:roomNum', function(req, res) {
 });
 app.get('/', sendLobby);
 server.listen(89);
-
+console.log('start server - ' + new Date());
 
 function getRoomNumByMonId(monId) {
 	var roomNum = -1;
