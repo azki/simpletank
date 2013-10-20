@@ -136,6 +136,7 @@ simpleTank.Tanks.prototype = {
 		ctx.restore();
 	},
 	/**
+	 * @deprecated
 	 * drawTurn : 슈퍼 노가다 코드 -_-
 	 * @param {object} ctx
 	 * @param {number} x

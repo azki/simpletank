@@ -222,7 +222,11 @@ io.of('/tank').on('connection', function(socket) {
 		if (roomNum > -1) {
 			room = roomArr[roomNum];
 			room.gaming = true;
-			broadcastRoom(room, 'startGame');
+			room.users.forEach(function (user, index) {
+				if (user.connected) {
+					sockMap[user.sockId].emit('startGame', index);
+				}
+			});
 		}
 	});
 	// TODO mon - 게임 끝

@@ -34,6 +34,10 @@
 				font-weight:bold;
 			}
 			
+			#myNick {
+				font-weight:bold;
+			}
+			
 			#readyRoomUi, #gameRoomUi {
 				display:none;
 			}
@@ -49,6 +53,11 @@
 		<script src="http://code.jquery.com/jquery-1.7.1.min.js">
 		</script>
 		<script src="http://code.jquery.com/mobile/1.1.0-rc.1/jquery.mobile-1.1.0-rc.1.min.js">
+		</script>
+		<script type="text/javascript">
+			var simpleTank = {};
+		</script>
+		<script type="text/javascript" src="./js/tank.js">
 		</script>
 		<script src="./js/io.min.js">
 		</script>
@@ -78,7 +87,9 @@
 			</div>
 			<div id="gameRoomUi">
 				<div id="hpPanel" class="r-panel ui-body-b">
-					<span id="myNick">azki</span>님의 에너지: <span id="hp">100</span>
+					<span id="myNick">azki</span><br/>
+					(<span id="hp">100</span>)<br/>
+					<canvas id="tankPreview" width="40" height="40"></canvas>
 				</div>
 				<div id="anglePanel" class="r-panel ui-body-c">
 					<h2>각도</h2>
@@ -105,6 +116,7 @@
 		</form>
 		<script>
 "use strict";
+var COLOR_MAP = ["#f00", "#00f", "#ff0", "#f0f"];
 var ROOM_NUM = -1;
 window.onload = function() {
 	//input nickName
@@ -152,6 +164,7 @@ window.onload = function() {
 	var myHp = 100;
 	var remainDoubleShotCount = 2;
 	var isReady = false;
+	var myTank = null;
 	var socket = io4azki.connect("/tank");
 	socket.on("connect", function() {
 		//console.log("connect");
@@ -178,13 +191,15 @@ window.onload = function() {
 		//console.log("tank_error", msg);
 		isRoom = false;
 		$("#status").html('<span style="color:#f44">Error: ' + msg + '</span>');
+		$("#readyRoomUi").hide();
+		$("#gameRoomUi").hide();
 	});
 	socket.on("clear_ready", function() {
 		//console.log("clear_ready");
 		isReady = false;
 		$("#ready").css("background-color", isReady ? "yellow" : "");
 	});
-	socket.on("startGame", function() {
+	socket.on("startGame", function(tankIndex) {
 		//console.log("startGame");
 		isMyTurn = false;
 		$("#status").html("게임이 시작되었습니다.");
@@ -194,6 +209,11 @@ window.onload = function() {
 		$("#remainDoubleShot").text(remainDoubleShotCount);
 		showGameRoom();
 		
+		if (myTank) {
+			myTank.color = COLOR_MAP[tankIndex];
+			redrawMyTank();
+		}
+		$("#myNick").css("color", COLOR_MAP[tankIndex]);
 		sendAngle();
 		sendPower();
 	});
@@ -232,10 +252,15 @@ window.onload = function() {
 	
 	function sendAngle() {
 		if (isRoom) {
+			var angle = Math.abs(180 - $("#angleSlider").val());
 			socket.emit("tank", {
 				name: "angle",
-				value: Math.abs(180 - $("#angleSlider").val())
+				value: angle
 			});
+			if (myTank) {
+				myTank.angle = angle;
+				redrawMyTank();
+			}
 		}
 	}
 	
@@ -304,7 +329,29 @@ window.onload = function() {
 			});
 			$(this).css("background-color", isReady ? "yellow" : "");
 		}
-	})
+	});
+	
+	function initTankPreview() {
+		var tankPreview, tankPreviewCtx;
+		tankPreview = $("#tankPreview").get(0);
+		if (tankPreview.getContext) {
+			tankPreviewCtx = tankPreview.getContext("2d");
+			myTank = new simpleTank.Tank(tankPreviewCtx, {
+				type: 1, //동그란 모양만.
+				x: 20,
+				y: 40,
+				angle: 90,
+				color: "#000"
+			});
+			myTank.initTank(1024);
+		}
+	}
+	function redrawMyTank() {
+		myTank.ctx.clearRect(0, 0, 40, 40);
+		myTank.redraw();
+	}
+	initTankPreview();
+	
 };
 		</script>
 	</body>
