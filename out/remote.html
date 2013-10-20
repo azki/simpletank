@@ -13,17 +13,12 @@
 				margin: 0
 			}
 			
-			#statusPanel {
-				margin: 0;
-				text-align: center;
-			}
-			
 			#readyRoomUi, #gameRoomUi {
 				display: none;
 			}
 			
-			.r-panel {
-				margin: 0;
+			#statusPanel,.r-panel {
+				margin: 3px 3px 0;
 				text-align: center;
 			}
 			
@@ -78,8 +73,9 @@
 				background-repeat: no-repeat;
 				background-position: center;
 			}
-			
-			
+			#btnsPanel {
+				margin: 15px 3px 0;
+			}
 		</style>
 	</head>
 	<body>
@@ -129,10 +125,10 @@
 						더블샷(<span id="remainDoubleShot">2</span>/2)
 					</button>
 					<button id="move" type="button" class="btn btn-large btn-info" data-inline="true">
-						이동 (&infin;)
+						이동(&infin;)
 					</button>
 					<button id="shot" type="button" class="btn btn-large btn-primary" data-inline="true">
-						발사 (&infin;)
+						발사(&infin;)
 					</button>
 				</div>
 			</div>
