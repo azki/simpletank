@@ -6,119 +6,157 @@
 		<meta name="apple-mobile-web-app-capable" content="yes">
 		<meta name="apple-mobile-web-app-status-bar-style" content="black">
 		<title>Simple Tank - azki.org:89</title>
-		<link rel="stylesheet" href="http://code.jquery.com/mobile/1.1.0-rc.1/jquery.mobile-1.1.0-rc.1.min.css" />
+		<link rel="stylesheet" href="css/bootstrap.min.css">
+		<link rel="stylesheet" href="css/jquery.nouislider.min.css" />
 		<style type="text/css">
 			html, body {
-			    margin: 0
+				margin: 0
 			}
 			
-			body {
-			    font-family: Georgia;
+			#statusPanel {
+				margin: 0;
+				text-align: center;
+			}
+			
+			#readyRoomUi, #gameRoomUi {
+				display: none;
 			}
 			
 			.r-panel {
-			    margin: 0;
-			    text-align: center;
+				margin: 0;
+				text-align: center;
 			}
 			
 			.r-panel h2 {
-			    margin: 0 0 0 15px;
-			    text-align: left;
+				margin: 0 0 0 55px;
+				text-align: left;
 			}
 			
 			#statusPanel {
 				padding: 10px;
 			}
+			
 			#status {
-				font-size:larger;
-				font-weight:bold;
+				font-size: x-large;
+				font-weight: bold;
 			}
 			
 			#myNick {
-				font-weight:bold;
-			}
-			
-			#readyRoomUi, #gameRoomUi {
-				display:none;
+				font-weight: bold;
 			}
 			
 			#nickNamePanel label {
-			    display: inline-block;
+				display: inline-block;
 			}
+			
 			#nickName {
-			    width: 40%;
-			    display: inline-block;
+				width: 40%;
+				display: inline-block;
 			}
+			
+			#hpPanel {
+				background:-moz-linear-gradient(top, #04BFBF, #FFFFFF);
+				background:-webkit-gradient(linear, left top, left bottom, color-stop(0%,#04BFBF), color-stop(100%,#FFFFFF));
+				padding-bottom:0;
+			}
+			
+			.tank-num {
+				font-size: large;
+				font-weight: normal;
+			}
+			.slider {
+				margin-left: 40px;
+				margin-right: 40px;
+			}
+			#angleSlider2 .noUi-handle.noUi-handle-lower {
+				background-image: url(img/rotate.png);
+				background-repeat: no-repeat;
+				background-position: center;
+			}
+			#powerSlider2 .noUi-handle.noUi-handle-lower {
+				background-image: url(img/move.png);
+				background-repeat: no-repeat;
+				background-position: center;
+			}
+			
+			
 		</style>
-		<script src="http://code.jquery.com/jquery-1.7.1.min.js">
-		</script>
-		<script src="http://code.jquery.com/mobile/1.1.0-rc.1/jquery.mobile-1.1.0-rc.1.min.js">
-		</script>
-		<script type="text/javascript">
-			var simpleTank = {};
-		</script>
-		<script type="text/javascript" src="./js/tank.js">
-		</script>
-		<script src="./js/io.min.js">
-		</script>
 	</head>
 	<body>
 		<form onsubmit="return false;">
-			<div id="statusPanel" class="r-panel ui-body-a">
-				<span id="status">status</span>
+			<div id="statusPanel" class="alert">
+				<span id="status">Loading..</span>
 			</div>
 			<div id="readyRoomUi">
-				<div id="nickNamePanel" class="r-panel ui-body-c" data-role="fieldcontain">
+				<div id="nickNamePanel" class="r-panel well">
 					<label for="nickName">
 						nick name:
 					</label>&nbsp;<input type="text" name="nickName" id="nickName" maxlength="8" value="" />
 					<br/>
 					변경 후 재접속해야 적용됩니다.
 				</div>
-				<div id="readyPanel" class="r-panel ui-body-c" data-role="fieldcontain">
-					<button id="ready" type="button">
-						Ready
-					</button>
+				<div id="readyPanel" class="r-panel well">
 					<span>마음의 준비가 되셨으면,
 						<br/>
 						Ready 버튼을 눌러주세요.
 					</span>
+					<button id="ready" type="button" class="btn btn-primary">
+						Ready
+					</button>
 				</div>
 			</div>
 			<div id="gameRoomUi">
-				<div id="hpPanel" class="r-panel ui-body-b">
-					<span id="myNick">azki</span><br/>
-					(<span id="hp">100</span>)<br/>
-					<canvas id="tankPreview" width="40" height="40"></canvas>
-				</div>
-				<div id="anglePanel" class="r-panel ui-body-c">
-					<h2>각도</h2>
-					<input type="range" name="angleSlider" id="angleSlider" value="45" min="1" max="179" data-highlight="true" />
-				</div>
-				<div id="powerPanel" class="r-panel ui-body-c">
-					<h2>힘</h2>
-					<input type="range" name="powerSlider" id="powerSlider" value="30" min="0" max="99" data-highlight="true" />
-				</div>
-				<div id="btnsPanel" class="r-panel ui-body-c">
-					<button id="doubleShot" type="button" data-inline="true">
-						더블샷
-					</button>
-					더블샷은 <span id="remainDoubleShot">2</span>발 남았습니다.
+				<div id="hpPanel" class="r-panel well well-small">
+					<span id="myNick">azki</span>
 					<br/>
-					<button id="move" type="button" data-inline="true">
+					(<span id="hp">100</span>)
+					<br/>
+					<canvas id="tankPreview" width="40" height="40">
+					</canvas>
+				</div>
+				<div id="anglePanel" class="r-panel well well-small">
+					<h2>각도 <span id="angleNum" class="tank-num"></span></h2>
+					<div class="slider" id="angleSlider2">
+					</div>
+				</div>
+				<div id="powerPanel" class="r-panel well well-small">
+					<h2>힘 <span id="powerNum" class="tank-num"></span></h2>
+					<div class="slider" id="powerSlider2">
+					</div>
+				</div>
+				<div id="btnsPanel" class="r-panel well well">
+					<button id="doubleShot" type="button" class="btn btn-large btn-danger" data-inline="true">
+						더블샷(<span id="remainDoubleShot">2</span>/2)
+					</button>
+					<button id="move" type="button" class="btn btn-large btn-info" data-inline="true">
 						이동 (&infin;)
 					</button>
-					<button id="shot" type="button" data-inline="true">
+					<button id="shot" type="button" class="btn btn-large btn-primary" data-inline="true">
 						발사 (&infin;)
 					</button>
 				</div>
 			</div>
 		</form>
+		<script src="js/jquery-1.10.1.min.js">
+		</script>
+		<script src="js/bootstrap.min.js">
+		</script>
+		<script src="js/jquery.nouislider.min.js">
+		</script>
+		<script src="js/io.min.js">
+		</script>
 		<script>
-"use strict";
-var COLOR_MAP = ["#f00", "#00f", "#ff0", "#f0f"];
-var ROOM_NUM = -1;
-window.onload = function() {
+			var simpleTank = {};
+		</script>
+		<script src="js/tank.js">
+		</script>
+		<script>
+/*jslint browser: true, sloppy: true, sub: true, todo: true, vars: true, white: true */
+/*global localStorage,$,window,prompt,io4azki,simpleTank*/
+window.onload = function(){
+	var COLOR_MAP = ["#f00", "#00f", "#ff0", "#f0f"];
+	var ROOM_NUM = -1;
+	
 	//input nickName
 	var nickName = localStorage.getItem("nickName");
 	if (!nickName) {
@@ -130,7 +168,7 @@ window.onload = function() {
 	}
 	$("#nickName").val(nickName);
 	$("#myNick").text(nickName);
-	var nickNameChangeFn = function () {
+	var nickNameChangeFn = function(){
 		nickName = $(this).val();
 		if (nickName && nickName.substr) {
 			nickName = nickName.substr(0, 8);
@@ -142,18 +180,16 @@ window.onload = function() {
 	$("#nickName").keyup(nickNameChangeFn);
 	
 	//init room number.
-	(function() {
-		var matched = location.href.match(/^\S+\/(\d+)$/);
-		if (matched) {
-			ROOM_NUM = +matched[1];
-		}
-	}());
+	var urlMatched = location.href.match(/^\S+\/(\d+)$/);
+	if (urlMatched) {
+		ROOM_NUM = +(urlMatched[1]);
+	}
 	
-	function showReadyRoom() {
+	function showReadyRoom(){
 		$("#gameRoomUi").hide();
 		$("#readyRoomUi").show();
 	}
-	function showGameRoom() {
+	function showGameRoom(){
 		$("#readyRoomUi").hide();
 		$("#gameRoomUi").show();
 	}
@@ -166,40 +202,99 @@ window.onload = function() {
 	var isReady = false;
 	var myTank = null;
 	var socket = io4azki.connect("/tank");
-	socket.on("connect", function() {
-		//console.log("connect");
+	
+	function initTankPreview(){
+		var tankPreview, tankPreviewCtx;
+		tankPreview = $("#tankPreview").get(0);
+		if (tankPreview.getContext) {
+			tankPreviewCtx = tankPreview.getContext("2d");
+			myTank = new simpleTank.Tank(tankPreviewCtx, {
+				type: 1, //동그란 모양만.
+				x: 20,
+				y: 40,
+				angle: 90,
+				color: "#000"
+			});
+			myTank.initTank(1024);
+		}
+	}
+	function redrawMyTank(){
+		myTank.ctx.clearRect(0, 0, 40, 40);
+		myTank.redraw();
+	}
+	initTankPreview();
+		
+	function sendAngle(){
+		if (isRoom) {
+			var angleNum = Math.round($("#angleSlider2").val());
+			$("#angleNum").text("(" + angleNum + ")");
+			var angle = Math.abs(180 - angleNum);
+			socket.emit("tank", {
+				name: "angle",
+				value: angle
+			});
+			if (myTank) {
+				myTank.angle = angle;
+				redrawMyTank();
+			}
+		}
+	}
+	function sendPower(){
+		if (isRoom) {
+			var powerNum = Math.round($("#powerSlider2").val());
+			$("#powerNum").text("(" + powerNum + ")");
+			socket.emit("tank", {
+				name: "power",
+				value: powerNum
+			});
+		}
+	}
+	function sendFire(fireType){
+		sendAngle();
+		sendPower();
+		if (isRoom) {
+			socket.emit("tank", {
+				name: "fire",
+				value: fireType
+			});
+			isMyTurn = false;
+		}
+	}
+	
+	socket.on("connect", function(){
 		$("#status").html("접속 중입니다...");
 		socket.emit("join", {
 			nickName: nickName,
 			roomNum: ROOM_NUM
 		});
 	});
-	socket.on("disconnect", function() {
-		//console.log("disconnect");
+	socket.on("disconnect", function(){
+		$("#statusPanel").removeClass().addClass("alert alert-error");
 		$("#status").html("접속이 끊어졌어요ㅠㅠ");
 		isRoom = false;
 		$("#readyRoomUi").hide();
 		$("#gameRoomUi").hide();
 	});
-	socket.on("successJoin", function() {
-		//console.log("successJoin");
+	socket.on("successJoin", function(){
+		$("#statusPanel").removeClass().addClass("alert alert-success");
 		$("#status").html(ROOM_NUM + "번 방 대기실");
 		isRoom = true;
 		showReadyRoom();
 	});
-	socket.on("tank_error", function(msg) {
-		//console.log("tank_error", msg);
+	socket.on("tank_error", function(msg){
+		$("#statusPanel").removeClass().addClass("alert alert-error");
 		isRoom = false;
 		$("#status").html('<span style="color:#f44">Error: ' + msg + '</span>');
 		$("#readyRoomUi").hide();
 		$("#gameRoomUi").hide();
 	});
-	socket.on("clear_ready", function() {
-		//console.log("clear_ready");
-		isReady = false;
-		$("#ready").css("background-color", isReady ? "yellow" : "");
+	socket.on("clear_ready", function(){
+		if (isReady) {
+			isReady = false;
+			$("#ready").button("toggle").css("font-weight", isReady ? "bold" : "normal");
+		}
 	});
-	socket.on("startGame", function(tankIndex) {
+	socket.on("startGame", function(tankIndex){
 		//console.log("startGame");
 		isMyTurn = false;
 		$("#status").html("게임이 시작되었습니다.");
@@ -217,100 +312,98 @@ window.onload = function() {
 		sendAngle();
 		sendPower();
 	});
-	socket.on("waitTurnToMyTurn", function(waitTurn) {
+	socket.on("waitTurnToMyTurn", function(waitTurn){
 		//console.log("waitTurnToMyTurn", waitTurn);
 		if (myHp <= 0) {
-			$("#status").html("사망하셨습니다.");
-			isMyTurn = false;
-		} else if (waitTurn === 0) {
-			$("#status").html("내 차례입니다.");
-			isMyTurn = true;
-		} else {
-			$("#status").html(waitTurn + "턴 후 차례가 돌아옵니다.");
+			$("#status").html("게임이 끝날 때까지 잠시 기다리세요.");
 			isMyTurn = false;
 		}
+		else 
+			if (waitTurn === 0) {
+				$("#status").html("내 차례입니다.");
+				isMyTurn = true;
+			}
+			else {
+				$("#status").html(waitTurn + "턴 후 차례가 돌아옵니다.");
+				isMyTurn = false;
+			}
 		
 		sendAngle();
 		sendPower();
 	});
-	socket.on("endGame", function() {
+	socket.on("endGame", function(){
 		//console.log("endGame");
 		isMyTurn = false;
 		$("#status").html(ROOM_NUM + "번 방 대기실");
 		
 		showReadyRoom();
 	});
-	socket.on("hp", function(hp) {
+	socket.on("hp", function(hp){
 		//console.log("hp", hp);
 		myHp = hp;
 		if (hp > 0) {
 			$("#hp").text(hp);
-		} else {
+		}
+		else {
 			$("#hp").text("사망하셨습니다.");
 		}
 	});
 	
-	function sendAngle() {
-		if (isRoom) {
-			var angle = Math.abs(180 - $("#angleSlider").val());
-			socket.emit("tank", {
-				name: "angle",
-				value: angle
-			});
-			if (myTank) {
-				myTank.angle = angle;
-				redrawMyTank();
-			}
-		}
-	}
-	
-	function sendPower() {
-		if (isRoom) {
-			socket.emit("tank", {
-				name: "power",
-				value: +$("#powerSlider").val()
-			});
-		}
-	}
-	
-	function sendFire(fireType) {
-		sendAngle();
-		sendPower();
-		if (isRoom) {
-			socket.emit("tank", {
-				name: "fire",
-				value: fireType
-			});
-			isMyTurn = false;
-		}
-	}
-	
+	var tankChangeTimer = null;
 	var isChangedAngle = false;
 	var isChangedPower = false;
-	$("#angleSlider").change(function () {
-		isChangedAngle = true;
-	});
-	$("#powerSlider").change(function () {
-		isChangedPower = true;
-	});
-	setInterval(function () {
-		if (isChangedAngle) {
-			isChangedAngle = false;
-			sendAngle();
+	$("#angleSlider2").noUiSlider({
+		range: [1, 179],
+		start: 45,
+		handles: 1,
+		step: 1,
+		slide: function(){
+			isChangedAngle = true;
+			if (!tankChangeTimer) {
+				setTankForChanged();
+			}
 		}
-		if (isChangedPower) {
-			isChangedPower = false;
-			sendPower();
+	});
+	$("#powerSlider2").noUiSlider({
+		range: [0, 99],
+		start: 40,
+		handles: 1,
+		step: 1,
+		slide: function(){
+			isChangedPower = true;
+			if (!tankChangeTimer) {
+				setTankForChanged();
+			}
 		}
-	}, 500);
+	});
+	function clearTankChangedTimer(){
+		if (tankChangeTimer) {
+			clearTimeout(tankChangeTimer);
+			tankChangeTimer = null;
+		}
+	}
+	function setTankForChanged(){
+		clearTankChangedTimer();
+		tankChangeTimer = setTimeout(function(){
+			clearTankChangedTimer();
+			if (isChangedAngle) {
+				isChangedAngle = false;
+				sendAngle();
+			}
+			if (isChangedPower) {
+				isChangedPower = false;
+				sendPower();
+			}
+		}, 250);
+	}
 	
-	$("#move,#shot").click(function() {
+	$("#move,#shot").click(function(){
 		if (isMyTurn === false) {
 			return;
 		}
 		sendFire($(this).attr("id"));
 	});
-	$("#doubleShot").click(function() {
+	$("#doubleShot").click(function(){
 		if (isMyTurn === false) {
 			return;
 		}
@@ -320,38 +413,16 @@ window.onload = function() {
 			sendFire($(this).attr("id"));
 		}
 	});
-	$("#ready").click(function() {
+	$("#ready").click(function(){
 		if (isRoom) {
 			isReady = !isReady;
 			socket.emit("tank", {
 				name: "ready",
 				value: isReady
 			});
-			$(this).css("background-color", isReady ? "yellow" : "");
+			$("#ready").button("toggle").css("font-weight", isReady ? "bold" : "normal");
 		}
 	});
-	
-	function initTankPreview() {
-		var tankPreview, tankPreviewCtx;
-		tankPreview = $("#tankPreview").get(0);
-		if (tankPreview.getContext) {
-			tankPreviewCtx = tankPreview.getContext("2d");
-			myTank = new simpleTank.Tank(tankPreviewCtx, {
-				type: 1, //동그란 모양만.
-				x: 20,
-				y: 40,
-				angle: 90,
-				color: "#000"
-			});
-			myTank.initTank(1024);
-		}
-	}
-	function redrawMyTank() {
-		myTank.ctx.clearRect(0, 0, 40, 40);
-		myTank.redraw();
-	}
-	initTankPreview();
-	
 };
 		</script>
 	</body>
