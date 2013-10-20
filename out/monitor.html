@@ -80,6 +80,7 @@ var readyArr = [];
 var countDownTimer = null;
 var tankUsers = [];
 var isGameStarted = false;
+var reGameTimer = null;
 
 $(function() {
 	var mapWidth, mapHeight, i, cvmap, cvtank, cvshot, mapCtx, tankCtx, shotCtx;
@@ -111,8 +112,15 @@ $(function() {
 	}
 });
 
+function clearReGameTimer() {
+	if (reGameTimer) {
+		clearTimeout(reGameTimer);
+		reGameTimer = null;
+	}
+};
+
 function startFirstGame() {
-	var bgAiPlayer, ui, reGameTimer, clearReGameTimer;
+	var bgAiPlayer, ui;
 	bgAiPlayer = new simpleTank.Player([{
 		type: "Ai04",
 		difficulty: 1,
@@ -138,13 +146,6 @@ function startFirstGame() {
 		name: "컴퓨터3",
 		team: 4
 	}]);
-	reGameTimer = null;
-	clearReGameTimer = function() {
-		if (reGameTimer) {
-			clearTimeout(reGameTimer);
-			reGameTimer = null;
-		}
-	};
 	window.endGame = function() {
 		clearReGameTimer();
 		//end game
@@ -206,6 +207,8 @@ function onNewTurn(turnIndex) {
 }
 
 function startTankGame() {
+	clearReGameTimer();
+	
 	var i, len, playerArr, player;
 	playerArr = [];
 	len = tankUsers.length;
