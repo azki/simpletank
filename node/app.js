@@ -45,7 +45,7 @@ var sendRemoteHtml = function(req, res) {
 var sendLobby = function (req, res) {
 	res.header('Cache-Control', 'no-cache,must-revalidate');
 	res.header('Content-Type', 'text/html;charset=UTF-8');
-	var resHtml = '<h1>현재 생성된 방들</h1>';
+	var resHtml = '<!doctype html><html><head><meta charset=utf-8/></head><body style="font-size:x-large;"><h1>현재 생성된 방들</h1>';
 	roomArr.forEach(function(room, index) {
 		if (room) {
 			resHtml += '<p><a href="/' + index + '">' + index + '번 방</a> ';
@@ -58,7 +58,7 @@ var sendLobby = function (req, res) {
 		}
 	});
 	resHtml += '<p><a href="javascript:location.reload();">새로고침</a></p>';
-	resHtml += '<p style="text-align:right;"><a href="/mon">방 만들기</a></p>';
+	resHtml += '<p style="text-align:right;"><a href="/mon">방 만들기</a></p></body></html>';
 	res.end(resHtml);
 };
 ['css', 'img', 'js'].forEach(function(dirName) {
