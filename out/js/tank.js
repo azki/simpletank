@@ -36,7 +36,7 @@ simpleTank.Tank.prototype = {
 		this.tankDepth = 1;
 		this.tankSize = Math.ceil(10 * (mapWidth / 640));
 		this.gunLength = Math.ceil(10 * (mapWidth / 640));
-		this.damageRage = Math.ceil(20 * (mapWidth / 640));
+		this.damageRage = Math.ceil(25 * (mapWidth / 640));
 		this.damageValue = 70;
 		this.doubleShot = 2;
 	},
@@ -45,7 +45,7 @@ simpleTank.Tank.prototype = {
 		this.tankDepth = 1;
 		this.tankSize = Math.ceil(10 * (mapWidth / 640));
 		this.gunLength = Math.ceil(10 * (mapWidth / 640));
-		this.damageRage = Math.ceil(20 * (mapWidth / 640));
+		this.damageRage = Math.ceil(25 * (mapWidth / 640));
 		this.damageValue = 70;
 		this.doubleShot = 2;
 	},
