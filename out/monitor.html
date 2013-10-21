@@ -143,17 +143,18 @@ function startFirstGame() {
 	}]);
 	window.endGame = function() {
 		clearReGameTimer();
+		startReadyRoom();
+		//end game
+		if (isGameStarted) {
+			isGameStarted = false;
+			socket.emit("endGame");
+			updateReadyRoomUser();
+		}
 		//bg ai play
 		map.newMapData();
 		map.redraw();
 		ui.newGame(bgAiPlayer);
 		ui.nextPlayer();
-		//end game
-		if (isGameStarted) {
-			isGameStarted = false;
-			socket.emit("endGame");
-			startReadyRoom();
-		}
 	};
 	ui = new simpleTank.Ui(map, tanks, shot, bgAiPlayer, function(result) {
 		if (result.type === "turnLost") {
@@ -190,7 +191,7 @@ function onNewTurn(turnIndex) {
 	var tankUser = tankUsers[turnIndex];
 	if (tankUser && tankUser.connected === false) { // 여기는 발생하지 않아야 함.
 		tankUi.die(turnIndex);
-		tankUi.nextPass();
+		tankUi.passTurn();
 		console.error("### onNewTurn - die", turnIndex);
 	} else {
 		socket.emit("turn", {
@@ -234,7 +235,6 @@ function startTankGame() {
 function startReadyRoom() {
 	showRoomMessage();
 	showUserTable();
-	updateReadyRoomUser();
 }
 
 function updateReadyRoomUser() {
@@ -365,6 +365,7 @@ function initSock() {
 		ROOM_NUM = roomNum;
 		tankUsers = [];
 		startReadyRoom();
+		updateReadyRoomUser();
 	});
 	socket.on("set_angle", function(data) {
 		if (isGameStarted === false) {
