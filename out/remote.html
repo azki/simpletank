@@ -216,6 +216,7 @@ window.onload = function(){
 	}
 	function redrawMyTank(){
 		myTank.ctx.clearRect(0, 0, 40, 40);
+		myTank.hp = myHp;
 		myTank.redraw();
 	}
 	initTankPreview();
