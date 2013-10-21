@@ -147,8 +147,9 @@ function startFirstGame() {
 		//end game
 		if (isGameStarted) {
 			isGameStarted = false;
-			socket.emit("endGame");
+			readyArr = [];
 			updateReadyRoomUser();
+			socket.emit("endGame");
 		}
 		//bg ai play
 		map.newMapData();
@@ -363,8 +364,8 @@ function initSock() {
 	});
 	socket.on("newRoom", function(roomNum) {
 		ROOM_NUM = roomNum;
-		tankUsers = [];
 		startReadyRoom();
+		tankUsers = [];
 		updateReadyRoomUser();
 	});
 	socket.on("set_angle", function(data) {
