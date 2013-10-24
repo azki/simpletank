@@ -132,18 +132,15 @@ io.of('/tank').on('connection', function(socket) {
 	socket.on('ping', function() {
 		var roomAndIndex = getRoomAndIndexByUserSockId(sockId);
 		if (roomAndIndex) {
-			console.log('ping');
 			roomAndIndex.room.users[roomAndIndex.index].pingTime = +new Date();
 		}
 	});
 	pingCheckTimer = setInterval(function () {
 		var roomAndIndex = getRoomAndIndexByUserSockId(sockId);
 		if (roomAndIndex) {
-			console.log('check');
 			if (new Date() - roomAndIndex.room.users[roomAndIndex.index].pingTime > PING_TIMEOUT_MS) {
-				console.log('disconnect 1');
+				console.log('disconnect because ping timeout.\n\t', sockId);
 				socket.disconnect();
-				console.log('disconnect 2');
 			}
 		}
 	}, 2000);
