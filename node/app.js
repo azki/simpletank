@@ -2,6 +2,7 @@
 /*global exports,require,__dirname*/
 
 var OUT_DIR = __dirname + '/../out';
+var PING_TIMEOUT_MS = 1000 * 10;
 
 var request = require("request");
 var fs = require('fs');
@@ -123,11 +124,32 @@ function broadcastRoom(room, name, value) {
 }
 
 io.of('/tank').on('connection', function(socket) {
-	var sockId = socket.id;
+	var sockId, pingCheckTimer;
+	sockId = socket.id;
 	sockMap[sockId] = socket;
 	console.log(' - connection\n\t', sockId);
 	
+	socket.on('ping', function() {
+		var roomAndIndex = getRoomAndIndexByUserSockId(sockId);
+		if (roomAndIndex) {
+			console.log('ping');
+			roomAndIndex.room.users[roomAndIndex.index].pingTime = +new Date();
+		}
+	});
+	pingCheckTimer = setInterval(function () {
+		var roomAndIndex = getRoomAndIndexByUserSockId(sockId);
+		if (roomAndIndex) {
+			console.log('check');
+			if (new Date() - roomAndIndex.room.users[roomAndIndex.index].pingTime > PING_TIMEOUT_MS) {
+				console.log('disconnect 1');
+				socket.disconnect();
+				console.log('disconnect 2');
+			}
+		}
+	}, 2000);
+	
 	socket.on('disconnect', function() {
+		clearInterval(pingCheckTimer);
 		console.log('- disconnect\n\t', sockId);
 		delete sockMap[sockId];
 		
@@ -277,7 +299,8 @@ io.of('/tank').on('connection', function(socket) {
 			sockId: sockId,
 			nickName: userInfo.nickName,
 			roomNum: userInfo.roomNum,
-			connected: true
+			connected: true,
+			pingTime: +new Date()
 		});
 		sendToMon(room, 'updateRoom', room);
 		broadcastRoom(room, 'clear_ready');
@@ -294,6 +317,34 @@ io.of('/tank').on('connection', function(socket) {
 			});
 		}
 	});
+	// remote - ping
+//	socket.on('ping', function() {
+//		var roomAndIndex, room, users, now, len, i, temp;
+//		roomAndIndex = getRoomAndIndexByUserSockId(sockId);
+//		if (roomAndIndex) {
+//			room = roomAndIndex.room;
+//			users = room.users;
+//			now = +new Date();
+//			users[roomAndIndex.index].pingTime = now;
+//			console.log('ping : ' + now);
+//			len = users.length;
+//			for (i = len - 1; i >= 0; i -= 1) {
+//				if (now - users[i].pingTime > PING_TIMEOUT_MS) {
+//					console.log('disconnect');
+//					temp = sockMap[users[i].sockId].disconnect();
+//					console.log('disconnect : ' + temp);
+//				}
+////				if (room.gaming) { // 게임중일 때는 user 에 connected=false 만 체크.
+////					room.users[roomAndIndex.index].connected = false;
+////					console.log('exit from game room\n\t', room.users);
+////				} else { // 게임중이 아닐 경우 user 에서 삭제.
+////					room.users.splice(roomAndIndex.index, 1);
+////					broadcastRoom(room, 'clear_ready');
+////					console.log('exit from ready room\n\t', room.users);
+////				}
+//			}
+//		}
+//	});
 });
 
 

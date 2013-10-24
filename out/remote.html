@@ -271,12 +271,28 @@ window.onload = function(){
 		isRoom = false;
 		$("#readyRoomUi").hide();
 		$("#gameRoomUi").hide();
+		
+		if (pingTimer) {
+			clearTimeout(pingTimer);
+			pingTimer = null;
+		}
 	});
+	var pingTimer = null;
 	socket.on("successJoin", function(){
 		$("#statusPanel").removeClass().addClass("alert alert-success");
 		$("#status").html(ROOM_NUM + "번 방 대기실");
 		isRoom = true;
 		showReadyRoom();
+		
+		if (pingTimer) {
+			clearTimeout(pingTimer);
+			pingTimer = null;
+		}
+		var pingFn = function () {
+			socket.emit("ping");
+			pingTimer = setTimeout(pingFn, 3000);
+		};
+		pingFn();
 	});
 	socket.on("tank_error", function(msg){
 		$("#statusPanel").removeClass().addClass("alert alert-error");
